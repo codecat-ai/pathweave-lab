@@ -19,7 +19,7 @@ npm run build
 
 ## Documentation
 
-When README content changes, keep `README.md`, `README-zh.md`, and `README-jp.md` synchronized in meaning.
+When README content changes, keep `README.md`, `README-zh.md`, and `README-ja.md` synchronized in meaning.
 
 ## Package publication
 
