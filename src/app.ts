@@ -1,4 +1,8 @@
-import { runBreadthFirstSearch } from "./algorithms";
+import {
+  createPlaybackFrames,
+  type PlaybackFrame,
+  runBreadthFirstSearch,
+} from "./algorithms";
 import {
   type Point,
   isWall,
@@ -14,6 +18,8 @@ const height = 10;
 let mode: "wall" | "start" | "goal" = "wall";
 let grid = createSampleGrid("braid", width, height);
 let latestResult = runBreadthFirstSearch(grid);
+let playbackFrames = createPlaybackFrames(latestResult);
+let playbackIndex = Math.max(0, playbackFrames.length - 1);
 
 const app = document.querySelector<HTMLDivElement>("#app");
 if (!app) throw new Error("Application root not found.");
@@ -38,6 +44,14 @@ app.innerHTML = `
         <select id="sample"></select>
       </label>
       <button id="run">Run BFS</button>
+      <div class="playback" aria-label="BFS playback controls">
+        <div class="playback-buttons">
+          <button id="playback-prev" type="button" aria-label="Previous BFS step">Prev</button>
+          <button id="playback-next" type="button" aria-label="Next BFS step">Next</button>
+          <button id="playback-reset" type="button">Reset playback</button>
+        </div>
+        <output id="playback-status" aria-live="polite"></output>
+      </div>
       <button id="clear">Clear walls</button>
       <button id="reset">Reset sample</button>
     </aside>
@@ -68,6 +82,10 @@ const stateElement = mustFind<HTMLTextAreaElement>("#state");
 const messageElement = mustFind<HTMLElement>("#message");
 const modeElement = mustFind<HTMLSelectElement>("#mode");
 const sampleElement = mustFind<HTMLSelectElement>("#sample");
+const playbackStatusElement = mustFind<HTMLOutputElement>("#playback-status");
+const playbackPreviousElement = mustFind<HTMLButtonElement>("#playback-prev");
+const playbackNextElement = mustFind<HTMLButtonElement>("#playback-next");
+const playbackResetElement = mustFind<HTMLButtonElement>("#playback-reset");
 
 sampleElement.innerHTML = sampleNames
   .map((name) => `<option value="${name}">${labelSample(name)}</option>`)
@@ -83,6 +101,18 @@ sampleElement.addEventListener("change", () => {
 });
 
 mustFind<HTMLButtonElement>("#run").addEventListener("click", recompute);
+playbackPreviousElement.addEventListener("click", () => {
+  playbackIndex = Math.max(0, playbackIndex - 1);
+  render();
+});
+playbackNextElement.addEventListener("click", () => {
+  playbackIndex = Math.min(playbackFrames.length - 1, playbackIndex + 1);
+  render();
+});
+playbackResetElement.addEventListener("click", () => {
+  playbackIndex = 0;
+  render();
+});
 mustFind<HTMLButtonElement>("#clear").addEventListener("click", () => {
   grid = { ...grid, walls: [] };
   recompute();
@@ -107,12 +137,15 @@ mustFind<HTMLButtonElement>("#import").addEventListener("click", () => {
 
 function recompute(): void {
   latestResult = runBreadthFirstSearch(grid);
+  playbackFrames = createPlaybackFrames(latestResult);
+  playbackIndex = Math.max(0, playbackFrames.length - 1);
   render();
 }
 
 function render(): void {
-  const pathKeys = new Set(latestResult.path.map(key));
-  const visitedKeys = new Set(latestResult.visitedOrder.map(key));
+  const frame = currentPlaybackFrame();
+  const pathKeys = new Set(frame?.pathPrefix.map(key) ?? []);
+  const visitedKeys = new Set(frame?.visited.map(key) ?? []);
   gridElement.style.setProperty("--columns", String(grid.width));
   gridElement.innerHTML = "";
 
@@ -121,8 +154,8 @@ function render(): void {
       const point = { x, y };
       const cell = document.createElement("button");
       cell.type = "button";
-      cell.className = cellClass(point, pathKeys, visitedKeys);
-      cell.textContent = cellLabel(point);
+      cell.className = cellClass(point, frame, pathKeys, visitedKeys);
+      cell.textContent = cellLabel(point, pathKeys);
       cell.ariaLabel = `Cell ${x}, ${y}`;
       cell.addEventListener("click", () => updateCell(point));
       gridElement.append(cell);
@@ -137,6 +170,10 @@ function render(): void {
   `;
   explanationElement.textContent = latestResult.explanation;
   stateElement.value = serializeGrid(grid);
+  playbackStatusElement.value = `${frame?.step ?? 0} / ${playbackFrames.length} steps`;
+  playbackPreviousElement.disabled = playbackIndex <= 0;
+  playbackNextElement.disabled = playbackIndex >= playbackFrames.length - 1;
+  playbackResetElement.disabled = playbackIndex <= 0;
 }
 
 function updateCell(point: Point): void {
@@ -156,6 +193,7 @@ function updateCell(point: Point): void {
 
 function cellClass(
   point: Point,
+  frame: PlaybackFrame | undefined,
   pathKeys: Set<string>,
   visitedKeys: Set<string>,
 ): string {
@@ -165,15 +203,15 @@ function cellClass(
   if (isWall(grid, point)) classes.push("wall");
   if (visitedKeys.has(key(point))) classes.push("visited");
   if (pathKeys.has(key(point))) classes.push("path");
+  if (frame && sameCell(point, frame.current)) classes.push("current");
   return classes.join(" ");
 }
 
-function cellLabel(point: Point): string {
+function cellLabel(point: Point, pathKeys: Set<string>): string {
   if (sameCell(point, grid.start)) return "S";
   if (sameCell(point, grid.goal)) return "G";
   if (isWall(grid, point)) return "";
-  if (latestResult.path.some((pathPoint) => sameCell(pathPoint, point)))
-    return "·";
+  if (pathKeys.has(key(point))) return "·";
   return "";
 }
 
@@ -191,6 +229,10 @@ function labelSample(name: SampleName): string {
 
 function setMessage(message: string): void {
   messageElement.textContent = message;
+}
+
+function currentPlaybackFrame(): PlaybackFrame | undefined {
+  return playbackFrames[playbackIndex];
 }
 
 function mustFind<T extends Element>(selector: string): T {

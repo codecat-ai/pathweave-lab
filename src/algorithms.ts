@@ -8,6 +8,13 @@ export interface BreadthFirstSearchResult {
   readonly explanation: string;
 }
 
+export interface PlaybackFrame {
+  readonly step: number;
+  readonly current: Point;
+  readonly visited: readonly Point[];
+  readonly pathPrefix: readonly Point[];
+}
+
 export function runBreadthFirstSearch(grid: Grid): BreadthFirstSearchResult {
   const queue: Point[] = [grid.start];
   const visited = new Set<string>([pointKey(grid.start)]);
@@ -53,6 +60,23 @@ export function runBreadthFirstSearch(grid: Grid): BreadthFirstSearchResult {
     distance: null,
     explanation: `BFS explored ${visitedOrder.length} reachable cells, but the goal is unreachable from the start.`,
   };
+}
+
+export function createPlaybackFrames(
+  result: BreadthFirstSearchResult,
+): PlaybackFrame[] {
+  const goal = result.path.at(-1);
+
+  return result.visitedOrder.map((current, index) => {
+    const pathDiscovered = Boolean(goal && samePoint(current, goal));
+
+    return {
+      step: index + 1,
+      current,
+      visited: result.visitedOrder.slice(0, index + 1),
+      pathPrefix: pathDiscovered ? result.path : [],
+    };
+  });
 }
 
 function reconstructPath(
