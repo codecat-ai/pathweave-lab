@@ -1,5 +1,7 @@
 # Pathweave Lab
 
+[English](README.md) | [中文](README-zh.md) | [日本語](README-jp.md)
+
 Pathweave Lab は、グリッド探索アルゴリズムを説明するための、インタラクティブでローカルファーストな経路探索プレイグラウンドです。
 
 ## 課題と動機
