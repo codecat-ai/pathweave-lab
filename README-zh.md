@@ -2,7 +2,6 @@
 
 [English](README.md) | [中文](README-zh.md) | [日本語](README-jp.md)
 
-
 Pathweave Lab 是一个交互式、本地优先的寻路实验场，用于讲解网格搜索算法。
 
 ## 问题与动机

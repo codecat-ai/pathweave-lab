@@ -2,7 +2,6 @@
 
 [English](README.md) | [中文](README-zh.md) | [日本語](README-jp.md)
 
-
 Pathweave Lab is an interactive, local-first pathfinding playground for explaining grid search algorithms.
 
 ## Problem and motivation
