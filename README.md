@@ -10,6 +10,7 @@ Pathfinding is easier to understand when learners can change the board and immed
 
 - Interactive grid for toggling walls and moving start/goal cells.
 - Breadth-first search with deterministic shortest paths on unweighted grids.
+- Step-by-step BFS playback controls for inspecting one visited cell at a time.
 - Visited-cell, distance, wall-count, and reachable/unreachable metrics.
 - Plain-language explanation of each search result.
 - Deterministic sample boards for repeatable lessons.
@@ -42,7 +43,8 @@ Then open the local URL printed by Vite in your browser.
 2. Select **Toggle walls** and click cells to reshape the board.
 3. Select **Move start** or **Move goal** to reposition endpoints.
 4. Click **Run BFS** and compare the visited cells with the final path.
-5. Copy the JSON state to share the same board locally.
+5. Use **Reset playback**, **Prev**, and **Next** to inspect each visited cell.
+6. Copy the JSON state to share the same board locally.
 
 ## Configuration
 
@@ -62,7 +64,7 @@ npm run build
 
 ## Testing
 
-Behavior tests cover shortest-path results, wall handling, unreachable boards, JSON round-tripping, malformed input rejection, and deterministic sample generation.
+Behavior tests cover shortest-path results, BFS playback frames, wall handling, unreachable boards, JSON round-tripping, malformed input rejection, and deterministic sample generation.
 
 ```bash
 npm test -- --run
@@ -70,7 +72,6 @@ npm test -- --run
 
 ## Roadmap
 
-- Step-by-step BFS playback controls.
 - Weighted terrain and Dijkstra comparison mode.
 - Shareable encoded URLs for board states.
 - Classroom worksheet examples.

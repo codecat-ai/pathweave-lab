@@ -95,6 +95,27 @@ button {
 button:hover {
   filter: brightness(1.08);
 }
+button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.55);
+  opacity: 0.55;
+}
+.playback {
+  display: grid;
+  gap: 8px;
+}
+.playback-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.playback-buttons button:last-child {
+  grid-column: 1 / -1;
+}
+#playback-status {
+  color: #bae6fd;
+  font-weight: 800;
+}
 .grid {
   --columns: 16;
   display: grid;
@@ -116,6 +137,10 @@ button:hover {
 .cell.path {
   background: #facc15;
   color: #111827;
+}
+.cell.current {
+  outline: 3px solid #f8fafc;
+  outline-offset: -3px;
 }
 .cell.wall {
   background: #020617;
