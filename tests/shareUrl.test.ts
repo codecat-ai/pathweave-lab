@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { parseGrid, serializeGrid, toggleWall, createGrid } from "../src/grid";
 import {
+  decodeAppStateFromHash,
   decodeBoardFromHash,
+  encodeAppState,
   encodeBoard,
   parseBoardHash,
 } from "../src/shareUrl";
@@ -16,6 +18,28 @@ describe("share URL board encoding", () => {
     const encoded = encodeBoard(grid);
 
     expect(parseGrid(decodeBoardFromHash(`#board=${encoded}`))).toEqual(grid);
+  });
+
+  it("round-trips movement mode with shared app state", () => {
+    let grid = createGrid(6, 5, { x: 1, y: 2 }, { x: 5, y: 4 });
+    grid = toggleWall(grid, { x: 2, y: 2 });
+
+    const encoded = encodeAppState({ grid, movementMode: "diagonal" });
+
+    expect(decodeAppStateFromHash(`#board=${encoded}`)).toEqual({
+      grid,
+      movementMode: "diagonal",
+    });
+  });
+
+  it("defaults old board-only share URLs to orthogonal movement", () => {
+    const grid = createGrid(4, 4, { x: 0, y: 0 }, { x: 3, y: 3 });
+    const encoded = encodeBoard(grid);
+
+    expect(decodeAppStateFromHash(`#board=${encoded}`)).toEqual({
+      grid,
+      movementMode: "orthogonal",
+    });
   });
 
   it("keeps the encoded payload safe for standard URL hashes", () => {

@@ -1,4 +1,11 @@
-import { type Grid, type Point, neighbors, pointKey, samePoint } from "./grid";
+import {
+  type Grid,
+  type MovementMode,
+  type Point,
+  neighbors,
+  pointKey,
+  samePoint,
+} from "./grid";
 
 export interface BreadthFirstSearchResult {
   readonly found: boolean;
@@ -15,7 +22,10 @@ export interface PlaybackFrame {
   readonly pathPrefix: readonly Point[];
 }
 
-export function runBreadthFirstSearch(grid: Grid): BreadthFirstSearchResult {
+export function runBreadthFirstSearch(
+  grid: Grid,
+  movementMode: MovementMode = "orthogonal",
+): BreadthFirstSearchResult {
   const queue: Point[] = [grid.start];
   const visited = new Set<string>([pointKey(grid.start)]);
   const previous = new Map<string, Point>();
@@ -38,11 +48,11 @@ export function runBreadthFirstSearch(grid: Grid): BreadthFirstSearchResult {
         path,
         visitedOrder,
         distance: path.length - 1,
-        explanation: `BFS explored ${visitedOrder.length} cells in layers and found a shortest path of ${path.length - 1} steps.`,
+        explanation: `BFS explored ${visitedOrder.length} cells in ${movementLabel(movementMode)} layers and found a shortest path of ${path.length - 1} steps.`,
       };
     }
 
-    for (const next of neighbors(grid, current)) {
+    for (const next of neighbors(grid, current, movementMode)) {
       const key = pointKey(next);
 
       if (!visited.has(key)) {
@@ -58,7 +68,7 @@ export function runBreadthFirstSearch(grid: Grid): BreadthFirstSearchResult {
     path: [],
     visitedOrder,
     distance: null,
-    explanation: `BFS explored ${visitedOrder.length} reachable cells, but the goal is unreachable from the start.`,
+    explanation: `BFS explored ${visitedOrder.length} reachable cells using ${movementLabel(movementMode)} movement, but the goal is unreachable from the start.`,
   };
 }
 
@@ -99,4 +109,8 @@ function reconstructPath(
   }
 
   return path.reverse();
+}
+
+function movementLabel(movementMode: MovementMode): string {
+  return movementMode === "diagonal" ? "diagonal" : "orthogonal";
 }

@@ -20,6 +20,42 @@ describe("runBreadthFirstSearch", () => {
     expect(result.explanation).toContain("BFS");
   });
 
+  it("keeps orthogonal movement as the default search behavior", () => {
+    const grid = createGrid(3, 3, { x: 0, y: 0 }, { x: 2, y: 2 });
+
+    const result = runBreadthFirstSearch(grid);
+
+    expect(result.found).toBe(true);
+    expect(result.distance).toBe(4);
+    expect(result.path).toHaveLength(5);
+  });
+
+  it("finds shorter paths when diagonal movement is enabled", () => {
+    const grid = createGrid(3, 3, { x: 0, y: 0 }, { x: 2, y: 2 });
+
+    const result = runBreadthFirstSearch(grid, "diagonal");
+
+    expect(result.found).toBe(true);
+    expect(result.distance).toBe(2);
+    expect(result.path).toEqual([
+      { x: 0, y: 0 },
+      { x: 1, y: 1 },
+      { x: 2, y: 2 },
+    ]);
+    expect(result.explanation).toContain("diagonal");
+  });
+
+  it("prevents diagonal movement through a blocked corner", () => {
+    let grid = createGrid(3, 3, { x: 0, y: 0 }, { x: 2, y: 2 });
+    grid = toggleWall(grid, { x: 1, y: 0 });
+    grid = toggleWall(grid, { x: 0, y: 1 });
+
+    const result = runBreadthFirstSearch(grid, "diagonal");
+
+    expect(result.found).toBe(false);
+    expect(result.visitedOrder).not.toContainEqual({ x: 1, y: 1 });
+  });
+
   it("routes around walls when a route exists", () => {
     let grid = createGrid(3, 3, { x: 0, y: 1 }, { x: 2, y: 1 });
     grid = toggleWall(grid, { x: 1, y: 1 });

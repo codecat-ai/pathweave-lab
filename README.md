@@ -12,12 +12,13 @@ Pathfinding is easier to understand when learners can change the board and immed
 
 - Interactive grid for toggling walls and moving start/goal cells.
 - Breadth-first search with deterministic shortest paths on unweighted grids.
+- Optional orthogonal or diagonal movement lessons, with orthogonal kept as the default.
 - Step-by-step BFS playback controls for inspecting one visited cell at a time.
-- Visited-cell, distance, wall-count, and reachable/unreachable metrics.
+- Visited-cell, distance, movement-mode, wall-count, and reachable/unreachable metrics.
 - Plain-language explanation of each search result.
 - Deterministic sample boards for repeatable lessons.
 - JSON export/import for local sharing and reproducible examples.
-- Shareable encoded `#board=` URLs for loading board states without a server.
+- Shareable encoded `#board=` URLs for loading board states and movement mode without a server.
 - Pure TypeScript grid and search functions covered by behavior tests.
 
 ## Installation
@@ -45,9 +46,10 @@ Then open the local URL printed by Vite in your browser.
 1. Choose the **Braid**, **Rooms**, or **Corridor** sample board.
 2. Select **Toggle walls** and click cells to reshape the board.
 3. Select **Move start** or **Move goal** to reposition endpoints.
-4. Click **Run BFS** and compare the visited cells with the final path.
-5. Use **Reset playback**, **Prev**, and **Next** to inspect each visited cell.
-6. Copy the JSON state or use **Copy share URL** to share the same board locally.
+4. Switch **Movement** between **Orthogonal (4-way)** and **Diagonal (8-way)** to compare how BFS layers change.
+5. Click **Run BFS** and compare the visited cells with the final path.
+6. Use **Reset playback**, **Prev**, and **Next** to inspect each visited cell.
+7. Copy the JSON state or use **Copy share URL** to share the same board and movement mode locally.
 
 ## Configuration
 
@@ -68,7 +70,7 @@ npm run build
 
 ## Testing
 
-Behavior tests cover shortest-path results, BFS playback frames, wall handling, unreachable boards, JSON round-tripping, share URL encoding, malformed input rejection, and deterministic sample generation.
+Behavior tests cover shortest-path results, orthogonal and diagonal movement, diagonal corner-cut prevention, BFS playback frames, wall handling, unreachable boards, JSON round-tripping, share URL encoding, malformed input rejection, and deterministic sample generation.
 
 ```bash
 npm test -- --run
