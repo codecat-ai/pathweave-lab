@@ -1,9 +1,4 @@
-import {
-  type Grid,
-  type MovementMode,
-  parseGrid,
-  serializeGrid,
-} from "./grid";
+import { type Grid, type MovementMode, parseGrid, serializeGrid } from "./grid";
 
 const payloadPattern = /^[A-Za-z0-9_-]+$/;
 
