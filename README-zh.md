@@ -17,6 +17,7 @@ Pathweave Lab 是一个交互式、本地优先的寻路实验场，用于讲解
 - 用通俗语言解释每次搜索结果。
 - 提供确定性的示例棋盘，便于重复教学。
 - 通过 JSON 导出/导入在本地分享和复现实例。
+- 使用可分享的编码 `#board=` URL，无需服务器即可加载棋盘状态。
 - 纯 TypeScript 网格与搜索函数，并由行为测试覆盖。
 
 ## 安装
@@ -46,11 +47,11 @@ npm run dev
 3. 选择 **Move start** 或 **Move goal** 来移动端点。
 4. 点击 **Run BFS**，比较已访问单元格和最终路径。
 5. 使用 **Reset playback**、**Prev** 和 **Next** 检查每个已访问单元格。
-6. 复制 JSON 状态，在本地分享同一个棋盘。
+6. 复制 JSON 状态，或使用 **Copy share URL** 在本地分享同一个棋盘。
 
 ## 配置
 
-MVP 中没有运行时配置文件。棋盘尺寸和示例名称定义在 `src/app.ts` 中，纯网格行为位于 `src/grid.ts`、`src/algorithms.ts` 和 `src/samples.ts`。
+MVP 中没有运行时配置文件。棋盘尺寸和示例名称定义在 `src/app.ts` 中，纯网格与分享行为位于 `src/grid.ts`、`src/shareUrl.ts`、`src/algorithms.ts` 和 `src/samples.ts`。
 
 ## 开发
 
@@ -59,6 +60,7 @@ MVP 中没有运行时配置文件。棋盘尺寸和示例名称定义在 `src/a
 ```bash
 npm ci
 npm run lint
+npm run typecheck
 npm run format
 npm test -- --run
 npm run build
@@ -66,7 +68,7 @@ npm run build
 
 ## 测试
 
-行为测试覆盖最短路径结果、BFS 回放帧、墙体处理、不可达棋盘、JSON 往返、错误输入拒绝以及确定性示例生成。
+行为测试覆盖最短路径结果、BFS 回放帧、墙体处理、不可达棋盘、JSON 往返、分享 URL 编码、错误输入拒绝以及确定性示例生成。
 
 ```bash
 npm test -- --run
@@ -75,7 +77,6 @@ npm test -- --run
 ## 路线图
 
 - 加权地形和 Dijkstra 对比模式。
-- 可分享的棋盘状态编码 URL。
 - 课堂练习示例。
 - 可选的深色/浅色主题切换。
 

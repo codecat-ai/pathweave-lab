@@ -17,6 +17,7 @@ Pathfinding is easier to understand when learners can change the board and immed
 - Plain-language explanation of each search result.
 - Deterministic sample boards for repeatable lessons.
 - JSON export/import for local sharing and reproducible examples.
+- Shareable encoded `#board=` URLs for loading board states without a server.
 - Pure TypeScript grid and search functions covered by behavior tests.
 
 ## Installation
@@ -46,11 +47,11 @@ Then open the local URL printed by Vite in your browser.
 3. Select **Move start** or **Move goal** to reposition endpoints.
 4. Click **Run BFS** and compare the visited cells with the final path.
 5. Use **Reset playback**, **Prev**, and **Next** to inspect each visited cell.
-6. Copy the JSON state to share the same board locally.
+6. Copy the JSON state or use **Copy share URL** to share the same board locally.
 
 ## Configuration
 
-There is no runtime configuration file in the MVP. Board dimensions and sample names are defined in `src/app.ts`, while pure grid behavior lives in `src/grid.ts`, `src/algorithms.ts`, and `src/samples.ts`.
+There is no runtime configuration file in the MVP. Board dimensions and sample names are defined in `src/app.ts`, while pure grid and sharing behavior lives in `src/grid.ts`, `src/shareUrl.ts`, `src/algorithms.ts`, and `src/samples.ts`.
 
 ## Development
 
@@ -59,6 +60,7 @@ This project uses Node.js 24, Vite, TypeScript, Vitest, ESLint, and Prettier. A 
 ```bash
 npm ci
 npm run lint
+npm run typecheck
 npm run format
 npm test -- --run
 npm run build
@@ -66,7 +68,7 @@ npm run build
 
 ## Testing
 
-Behavior tests cover shortest-path results, BFS playback frames, wall handling, unreachable boards, JSON round-tripping, malformed input rejection, and deterministic sample generation.
+Behavior tests cover shortest-path results, BFS playback frames, wall handling, unreachable boards, JSON round-tripping, share URL encoding, malformed input rejection, and deterministic sample generation.
 
 ```bash
 npm test -- --run
@@ -75,7 +77,6 @@ npm test -- --run
 ## Roadmap
 
 - Weighted terrain and Dijkstra comparison mode.
-- Shareable encoded URLs for board states.
 - Classroom worksheet examples.
 - Optional dark/light theme toggle.
 
