@@ -19,6 +19,7 @@ Pathfinding is easier to understand when learners can change the board and immed
 - Deterministic sample boards for repeatable lessons.
 - JSON export/import for local sharing and reproducible examples.
 - Shareable encoded `#board=` URLs for loading board states and movement mode without a server.
+- Copyable classroom worksheet text with board summary, student prompts, compact legend, and BFS answer key.
 - Pure TypeScript grid and search functions covered by behavior tests.
 
 ## Installation
@@ -50,10 +51,11 @@ Then open the local URL printed by Vite in your browser.
 5. Click **Run BFS** and compare the visited cells with the final path.
 6. Use **Reset playback**, **Prev**, and **Next** to inspect each visited cell.
 7. Copy the JSON state or use **Copy share URL** to share the same board and movement mode locally.
+8. Use **Copy worksheet** to place a concise Markdown prompt and answer key into a lesson handout.
 
 ## Configuration
 
-There is no runtime configuration file in the MVP. Board dimensions and sample names are defined in `src/app.ts`, while pure grid and sharing behavior lives in `src/grid.ts`, `src/shareUrl.ts`, `src/algorithms.ts`, and `src/samples.ts`.
+There is no runtime configuration file in the MVP. Board dimensions and sample names are defined in `src/app.ts`, while pure grid, worksheet, and sharing behavior lives in `src/grid.ts`, `src/worksheet.ts`, `src/shareUrl.ts`, `src/algorithms.ts`, and `src/samples.ts`.
 
 ## Development
 
@@ -70,7 +72,7 @@ npm run build
 
 ## Testing
 
-Behavior tests cover shortest-path results, orthogonal and diagonal movement, diagonal corner-cut prevention, BFS playback frames, wall handling, unreachable boards, JSON round-tripping, share URL encoding, malformed input rejection, and deterministic sample generation.
+Behavior tests cover shortest-path results, orthogonal and diagonal movement, diagonal corner-cut prevention, BFS playback frames, wall handling, unreachable boards, worksheet export text, JSON round-tripping, share URL encoding, malformed input rejection, and deterministic sample generation.
 
 ```bash
 npm test -- --run
@@ -79,7 +81,7 @@ npm test -- --run
 ## Roadmap
 
 - Weighted terrain and Dijkstra comparison mode.
-- Classroom worksheet examples.
+- Additional classroom worksheet variants.
 - Optional dark/light theme toggle.
 
 ## Contributing
