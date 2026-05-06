@@ -3,6 +3,8 @@ export interface Point {
   readonly y: number;
 }
 
+export type MovementMode = "orthogonal" | "diagonal";
+
 export interface Grid {
   readonly width: number;
   readonly height: number;
@@ -122,16 +124,31 @@ export function isWall(grid: Grid, point: Point): boolean {
   return grid.walls.some((wall) => samePoint(wall, point));
 }
 
-export function neighbors(grid: Grid, point: Point): Point[] {
-  const candidates = [
+export function neighbors(
+  grid: Grid,
+  point: Point,
+  movementMode: MovementMode = "orthogonal",
+): Point[] {
+  const orthogonalCandidates = [
     { x: point.x + 1, y: point.y },
     { x: point.x, y: point.y + 1 },
     { x: point.x - 1, y: point.y },
     { x: point.x, y: point.y - 1 },
   ];
 
-  return candidates.filter(
-    (candidate) => isPointInBounds(grid, candidate) && !isWall(grid, candidate),
+  const candidates =
+    movementMode === "diagonal"
+      ? [
+          ...orthogonalCandidates,
+          { x: point.x + 1, y: point.y + 1 },
+          { x: point.x - 1, y: point.y + 1 },
+          { x: point.x - 1, y: point.y - 1 },
+          { x: point.x + 1, y: point.y - 1 },
+        ]
+      : orthogonalCandidates;
+
+  return candidates.filter((candidate) =>
+    isPassableNeighbor(grid, point, candidate, movementMode),
   );
 }
 
@@ -213,4 +230,26 @@ function sortPoints(points: readonly Point[]): Point[] {
   return [...points].sort(
     (left, right) => left.y - right.y || left.x - right.x,
   );
+}
+
+function isPassableNeighbor(
+  grid: Grid,
+  from: Point,
+  to: Point,
+  movementMode: MovementMode,
+): boolean {
+  if (!isPointInBounds(grid, to) || isWall(grid, to)) {
+    return false;
+  }
+
+  const isDiagonal = from.x !== to.x && from.y !== to.y;
+
+  if (movementMode !== "diagonal" || !isDiagonal) {
+    return true;
+  }
+
+  const horizontalSide = { x: to.x, y: from.y };
+  const verticalSide = { x: from.x, y: to.y };
+
+  return !isWall(grid, horizontalSide) || !isWall(grid, verticalSide);
 }

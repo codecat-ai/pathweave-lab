@@ -4,6 +4,7 @@ import {
   runBreadthFirstSearch,
 } from "./algorithms";
 import {
+  type MovementMode,
   type Point,
   isWall,
   parseGrid,
@@ -11,14 +12,19 @@ import {
   toggleWall,
 } from "./grid";
 import { type SampleName, createSampleGrid, sampleNames } from "./samples";
-import { createShareUrl, decodeBoard, parseBoardHash } from "./shareUrl";
+import {
+  createAppStateShareUrl,
+  decodeAppStateFromHash,
+  parseBoardHash,
+} from "./shareUrl";
 import "./style.css";
 
 const width = 16;
 const height = 10;
 let mode: "wall" | "start" | "goal" = "wall";
+let movementMode: MovementMode = "orthogonal";
 let grid = createSampleGrid("braid", width, height);
-let latestResult = runBreadthFirstSearch(grid);
+let latestResult = runBreadthFirstSearch(grid, movementMode);
 let playbackFrames = createPlaybackFrames(latestResult);
 let playbackIndex = Math.max(0, playbackFrames.length - 1);
 
@@ -43,6 +49,12 @@ app.innerHTML = `
       </label>
       <label>Sample board
         <select id="sample"></select>
+      </label>
+      <label>Movement
+        <select id="movement-mode">
+          <option value="orthogonal">Orthogonal (4-way)</option>
+          <option value="diagonal">Diagonal (8-way)</option>
+        </select>
       </label>
       <button id="run">Run BFS</button>
       <div class="playback" aria-label="BFS playback controls">
@@ -83,6 +95,7 @@ const explanationElement = mustFind<HTMLElement>("#explanation");
 const stateElement = mustFind<HTMLTextAreaElement>("#state");
 const messageElement = mustFind<HTMLElement>("#message");
 const modeElement = mustFind<HTMLSelectElement>("#mode");
+const movementModeElement = mustFind<HTMLSelectElement>("#movement-mode");
 const sampleElement = mustFind<HTMLSelectElement>("#sample");
 const playbackStatusElement = mustFind<HTMLOutputElement>("#playback-status");
 const playbackPreviousElement = mustFind<HTMLButtonElement>("#playback-prev");
@@ -95,6 +108,11 @@ sampleElement.innerHTML = sampleNames
 
 modeElement.addEventListener("change", () => {
   mode = modeElement.value as typeof mode;
+});
+
+movementModeElement.addEventListener("change", () => {
+  movementMode = movementModeElement.value as MovementMode;
+  recompute();
 });
 
 sampleElement.addEventListener("change", () => {
@@ -142,7 +160,7 @@ mustFind<HTMLButtonElement>("#copy-share-url").addEventListener(
 );
 
 function recompute(): void {
-  latestResult = runBreadthFirstSearch(grid);
+  latestResult = runBreadthFirstSearch(grid, movementMode);
   playbackFrames = createPlaybackFrames(latestResult);
   playbackIndex = Math.max(0, playbackFrames.length - 1);
   render();
@@ -171,6 +189,7 @@ function render(): void {
   metricsElement.innerHTML = `
     <div><dt>Status</dt><dd>${latestResult.found ? "Reachable" : "Unreachable"}</dd></div>
     <div><dt>Distance</dt><dd>${latestResult.distance ?? "—"}</dd></div>
+    <div><dt>Movement</dt><dd>${movementMode === "diagonal" ? "Diagonal" : "Orthogonal"}</dd></div>
     <div><dt>Visited</dt><dd>${latestResult.visitedOrder.length}</dd></div>
     <div><dt>Walls</dt><dd>${grid.walls.length}</dd></div>
   `;
@@ -238,7 +257,10 @@ function setMessage(message: string): void {
 }
 
 async function copyShareUrl(): Promise<void> {
-  const shareUrl = createShareUrl(window.location.href, grid);
+  const shareUrl = createAppStateShareUrl(window.location.href, {
+    grid,
+    movementMode,
+  });
   window.history.replaceState(null, "", shareUrl);
 
   if (!navigator.clipboard?.writeText) {
@@ -262,7 +284,10 @@ function loadBoardFromLocationHash(): string | null {
       return null;
     }
 
-    grid = decodeBoard(encoded);
+    const appState = decodeAppStateFromHash(window.location.hash);
+    grid = appState.grid;
+    movementMode = appState.movementMode;
+    movementModeElement.value = movementMode;
     return "Board loaded from share URL.";
   } catch (error) {
     const message =
