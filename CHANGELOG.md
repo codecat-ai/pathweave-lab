@@ -4,6 +4,8 @@ All notable changes to Pathweave Lab will be documented in this file.
 
 ## Unreleased
 
+- Added copyable classroom worksheet export with board summary, movement mode, student prompts, compact legend, and BFS answer key.
+- Added behavior tests for reachable and unreachable worksheet output.
 - Added optional diagonal BFS movement mode while keeping orthogonal movement as the default.
 - Added diagonal corner-cut prevention so blocked adjacent side cells stop invalid diagonal steps.
 - Added UI movement controls, movement metrics, and share URL preservation for movement mode.

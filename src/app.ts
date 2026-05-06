@@ -17,6 +17,7 @@ import {
   decodeAppStateFromHash,
   parseBoardHash,
 } from "./shareUrl";
+import { createWorksheetText } from "./worksheet";
 import "./style.css";
 
 const width = 16;
@@ -84,6 +85,7 @@ app.innerHTML = `
       <button id="export">Export current board</button>
       <button id="import">Import board</button>
       <button id="copy-share-url">Copy share URL</button>
+      <button id="copy-worksheet">Copy worksheet</button>
     </div>
     <p id="message" role="status"></p>
   </section>
@@ -157,6 +159,10 @@ mustFind<HTMLButtonElement>("#import").addEventListener("click", () => {
 mustFind<HTMLButtonElement>("#copy-share-url").addEventListener(
   "click",
   () => void copyShareUrl(),
+);
+mustFind<HTMLButtonElement>("#copy-worksheet").addEventListener(
+  "click",
+  () => void copyWorksheet(),
 );
 
 function recompute(): void {
@@ -273,6 +279,28 @@ async function copyShareUrl(): Promise<void> {
     setMessage("Share URL copied to clipboard.");
   } catch {
     setMessage("Share URL added to the address bar. Clipboard copy failed.");
+  }
+}
+
+async function copyWorksheet(): Promise<void> {
+  const worksheet = createWorksheetText(grid, movementMode, latestResult);
+
+  if (!navigator.clipboard?.writeText) {
+    stateElement.value = worksheet;
+    setMessage(
+      "Worksheet text placed in the board text area because clipboard is unavailable.",
+    );
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(worksheet);
+    setMessage("Worksheet copied to clipboard.");
+  } catch {
+    stateElement.value = worksheet;
+    setMessage(
+      "Worksheet text placed in the board text area because clipboard copy failed.",
+    );
   }
 }
 
