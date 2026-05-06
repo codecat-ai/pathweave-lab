@@ -11,6 +11,7 @@ import {
   toggleWall,
 } from "./grid";
 import { type SampleName, createSampleGrid, sampleNames } from "./samples";
+import { createShareUrl, decodeBoard, parseBoardHash } from "./shareUrl";
 import "./style.css";
 
 const width = 16;
@@ -70,6 +71,7 @@ app.innerHTML = `
     <div class="row">
       <button id="export">Export current board</button>
       <button id="import">Import board</button>
+      <button id="copy-share-url">Copy share URL</button>
     </div>
     <p id="message" role="status"></p>
   </section>
@@ -134,6 +136,10 @@ mustFind<HTMLButtonElement>("#import").addEventListener("click", () => {
     setMessage(error instanceof Error ? error.message : "Board import failed.");
   }
 });
+mustFind<HTMLButtonElement>("#copy-share-url").addEventListener(
+  "click",
+  () => void copyShareUrl(),
+);
 
 function recompute(): void {
   latestResult = runBreadthFirstSearch(grid);
@@ -231,6 +237,40 @@ function setMessage(message: string): void {
   messageElement.textContent = message;
 }
 
+async function copyShareUrl(): Promise<void> {
+  const shareUrl = createShareUrl(window.location.href, grid);
+  window.history.replaceState(null, "", shareUrl);
+
+  if (!navigator.clipboard?.writeText) {
+    setMessage("Share URL added to the address bar. Clipboard is unavailable.");
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(shareUrl);
+    setMessage("Share URL copied to clipboard.");
+  } catch {
+    setMessage("Share URL added to the address bar. Clipboard copy failed.");
+  }
+}
+
+function loadBoardFromLocationHash(): string | null {
+  try {
+    const encoded = parseBoardHash(window.location.hash);
+
+    if (encoded === null) {
+      return null;
+    }
+
+    grid = decodeBoard(encoded);
+    return "Board loaded from share URL.";
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Board share URL is invalid.";
+    return `Share URL ignored: ${message}`;
+  }
+}
+
 function currentPlaybackFrame(): PlaybackFrame | undefined {
   return playbackFrames[playbackIndex];
 }
@@ -241,4 +281,9 @@ function mustFind<T extends Element>(selector: string): T {
   return element;
 }
 
-render();
+const startupMessage = loadBoardFromLocationHash();
+recompute();
+
+if (startupMessage) {
+  setMessage(startupMessage);
+}
