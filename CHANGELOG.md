@@ -4,6 +4,8 @@ All notable changes to Pathweave Lab will be documented in this file.
 
 ## Unreleased
 
+- Added an optional browser theme toggle with dark mode as the default, light mode support, and localStorage persistence.
+- Added behavior tests for theme preference loading, invalid stored values, storage failures, persistence, and toggling.
 - Added weighted terrain painting with normal, mud, and water cells.
 - Added deterministic Dijkstra search and BFS-vs-Dijkstra comparison summaries for teaching weighted path cost.
 - Preserved weighted terrain in JSON export/import and share URLs while keeping old shared boards compatible.

@@ -24,6 +24,7 @@ import {
   decodeAppStateFromHash,
   parseBoardHash,
 } from "./shareUrl";
+import { nextTheme, persistTheme, readStoredTheme, type Theme } from "./theme";
 import { createWorksheetText } from "./worksheet";
 import "./style.css";
 
@@ -41,15 +42,23 @@ let latestResult: SearchResult = runBreadthFirstSearch(grid, movementMode);
 let comparisonExplanation = "";
 let playbackFrames = createPlaybackFrames(latestResult);
 let playbackIndex = Math.max(0, playbackFrames.length - 1);
+let theme: Theme = readStoredTheme(readLocalStorage());
 
 const app = document.querySelector<HTMLDivElement>("#app");
 if (!app) throw new Error("Application root not found.");
 
+applyTheme(theme);
+
 app.innerHTML = `
   <section class="hero">
-    <p class="eyebrow">Local-first pathfinding playground</p>
-    <h1>Pathweave Lab</h1>
-    <p>Sketch walls, move endpoints, and watch breadth-first search weave the shortest route through a grid.</p>
+    <div>
+      <p class="eyebrow">Local-first pathfinding playground</p>
+      <h1>Pathweave Lab</h1>
+      <p>Sketch walls, move endpoints, and watch breadth-first search weave the shortest route through a grid.</p>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light mode" aria-pressed="false">
+      Dark mode
+    </button>
   </section>
   <section class="workspace">
     <aside class="panel controls" aria-label="Controls">
@@ -125,6 +134,7 @@ const playbackStatusElement = mustFind<HTMLOutputElement>("#playback-status");
 const playbackPreviousElement = mustFind<HTMLButtonElement>("#playback-prev");
 const playbackNextElement = mustFind<HTMLButtonElement>("#playback-next");
 const playbackResetElement = mustFind<HTMLButtonElement>("#playback-reset");
+const themeToggleElement = mustFind<HTMLButtonElement>("#theme-toggle");
 
 sampleElement.innerHTML = sampleNames
   .map((name) => `<option value="${name}">${labelSample(name)}</option>`)
@@ -161,6 +171,12 @@ playbackNextElement.addEventListener("click", () => {
 playbackResetElement.addEventListener("click", () => {
   playbackIndex = 0;
   render();
+});
+themeToggleElement.addEventListener("click", () => {
+  theme = nextTheme(theme);
+  applyTheme(theme);
+  persistTheme(readLocalStorage(), theme);
+  renderThemeToggle();
 });
 mustFind<HTMLButtonElement>("#clear").addEventListener("click", () => {
   grid = { ...grid, walls: [] };
@@ -247,6 +263,28 @@ function render(): void {
   playbackPreviousElement.disabled = playbackIndex <= 0;
   playbackNextElement.disabled = playbackIndex >= playbackFrames.length - 1;
   playbackResetElement.disabled = playbackIndex <= 0;
+}
+
+function renderThemeToggle(): void {
+  const isDark = theme === "dark";
+  themeToggleElement.textContent = isDark ? "Dark mode" : "Light mode";
+  themeToggleElement.ariaLabel = isDark
+    ? "Switch to light mode"
+    : "Switch to dark mode";
+  themeToggleElement.ariaPressed = String(!isDark);
+}
+
+function applyTheme(nextTheme: Theme): void {
+  document.documentElement.dataset.theme = nextTheme;
+  document.documentElement.style.colorScheme = nextTheme;
+}
+
+function readLocalStorage(): Storage | undefined {
+  try {
+    return window.localStorage;
+  } catch {
+    return undefined;
+  }
 }
 
 function updateCell(point: Point): void {
@@ -395,6 +433,7 @@ function mustFind<T extends Element>(selector: string): T {
 
 const startupMessage = loadBoardFromLocationHash();
 recompute();
+renderThemeToggle();
 
 if (startupMessage) {
   setMessage(startupMessage);

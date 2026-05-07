@@ -17,6 +17,7 @@ Pathfinding is easier to understand when learners can change the board and immed
 - BFS vs Dijkstra comparison summaries that explain steps versus weighted cost.
 - Optional orthogonal or diagonal movement lessons, with orthogonal kept as the default.
 - Step-by-step playback controls for inspecting one visited cell at a time.
+- Optional light theme toggle, with dark mode kept as the default and saved per browser.
 - Visited-cell, distance, weighted-cost, movement-mode, wall-count, terrain-count, and reachable/unreachable metrics.
 - Plain-language explanation of each search result.
 - Deterministic sample boards for repeatable lessons.
@@ -53,14 +54,15 @@ Then open the local URL printed by Vite in your browser.
 4. Select **Move start** or **Move goal** to reposition endpoints.
 5. Switch **Search** between **BFS (unweighted)**, **Dijkstra (weighted)**, and **Compare BFS and Dijkstra**.
 6. Switch **Movement** between **Orthogonal (4-way)** and **Diagonal (8-way)** to compare how movement rules change the result.
-7. Click **Run search** and compare visited cells, steps, weighted cost, and the final path.
-8. Use **Reset playback**, **Prev**, and **Next** to inspect each visited cell.
-9. Copy the JSON state or use **Copy share URL** to share the same board, terrain, and movement mode locally.
-10. Use **Copy worksheet** to place a concise Markdown prompt and answer key into a lesson handout.
+7. Use **Light mode** or **Dark mode** to switch the browser theme.
+8. Click **Run search** and compare visited cells, steps, weighted cost, and the final path.
+9. Use **Reset playback**, **Prev**, and **Next** to inspect each visited cell.
+10. Copy the JSON state or use **Copy share URL** to share the same board, terrain, and movement mode locally.
+11. Use **Copy worksheet** to place a concise Markdown prompt and answer key into a lesson handout.
 
 ## Configuration
 
-There is no runtime configuration file in the MVP. Board dimensions and sample names are defined in `src/app.ts`, while pure grid, worksheet, and sharing behavior lives in `src/grid.ts`, `src/worksheet.ts`, `src/shareUrl.ts`, `src/algorithms.ts`, and `src/samples.ts`.
+There is no runtime configuration file in the MVP. Board dimensions and sample names are defined in `src/app.ts`, while pure grid, theme, worksheet, and sharing behavior lives in `src/grid.ts`, `src/theme.ts`, `src/worksheet.ts`, `src/shareUrl.ts`, `src/algorithms.ts`, and `src/samples.ts`.
 
 ## Development
 
@@ -77,7 +79,7 @@ npm run build
 
 ## Testing
 
-Behavior tests cover shortest-path results, weighted terrain costs, Dijkstra lower-cost path selection, BFS-vs-Dijkstra explanations, orthogonal and diagonal movement, diagonal corner-cut prevention, playback frames, wall handling, unreachable boards, worksheet export text, JSON round-tripping, share URL encoding, malformed input rejection, and deterministic sample generation.
+Behavior tests cover shortest-path results, weighted terrain costs, Dijkstra lower-cost path selection, BFS-vs-Dijkstra explanations, orthogonal and diagonal movement, diagonal corner-cut prevention, playback frames, wall handling, unreachable boards, worksheet export text, JSON round-tripping, share URL encoding, theme preference storage, malformed input rejection, and deterministic sample generation.
 
 ```bash
 npm test -- --run
@@ -86,7 +88,6 @@ npm test -- --run
 ## Roadmap
 
 - Additional classroom worksheet variants.
-- Optional dark/light theme toggle.
 
 ## Contributing
 
