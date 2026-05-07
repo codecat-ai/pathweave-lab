@@ -1,14 +1,21 @@
 import {
+  comparePathfinding,
   createPlaybackFrames,
+  type BreadthFirstSearchResult,
+  type DijkstraSearchResult,
   type PlaybackFrame,
   runBreadthFirstSearch,
+  runDijkstraSearch,
 } from "./algorithms";
 import {
   type MovementMode,
   type Point,
+  type TerrainType,
   isWall,
   parseGrid,
   serializeGrid,
+  setTerrain,
+  terrainAt,
   toggleWall,
 } from "./grid";
 import { type SampleName, createSampleGrid, sampleNames } from "./samples";
@@ -22,10 +29,16 @@ import "./style.css";
 
 const width = 16;
 const height = 10;
-let mode: "wall" | "start" | "goal" = "wall";
+type PaintMode = "wall" | "terrain" | "start" | "goal";
+type SearchMode = "bfs" | "dijkstra" | "compare";
+type SearchResult = BreadthFirstSearchResult | DijkstraSearchResult;
+
+let mode: PaintMode = "wall";
+let searchMode: SearchMode = "bfs";
 let movementMode: MovementMode = "orthogonal";
 let grid = createSampleGrid("braid", width, height);
-let latestResult = runBreadthFirstSearch(grid, movementMode);
+let latestResult: SearchResult = runBreadthFirstSearch(grid, movementMode);
+let comparisonExplanation = "";
 let playbackFrames = createPlaybackFrames(latestResult);
 let playbackIndex = Math.max(0, playbackFrames.length - 1);
 
@@ -44,6 +57,7 @@ app.innerHTML = `
       <label>Paint mode
         <select id="mode">
           <option value="wall">Toggle walls</option>
+          <option value="terrain">Cycle terrain</option>
           <option value="start">Move start</option>
           <option value="goal">Move goal</option>
         </select>
@@ -57,7 +71,14 @@ app.innerHTML = `
           <option value="diagonal">Diagonal (8-way)</option>
         </select>
       </label>
-      <button id="run">Run BFS</button>
+      <label>Search
+        <select id="search-mode">
+          <option value="bfs">BFS (unweighted)</option>
+          <option value="dijkstra">Dijkstra (weighted)</option>
+          <option value="compare">Compare BFS and Dijkstra</option>
+        </select>
+      </label>
+      <button id="run">Run search</button>
       <div class="playback" aria-label="BFS playback controls">
         <div class="playback-buttons">
           <button id="playback-prev" type="button" aria-label="Previous BFS step">Prev</button>
@@ -98,6 +119,7 @@ const stateElement = mustFind<HTMLTextAreaElement>("#state");
 const messageElement = mustFind<HTMLElement>("#message");
 const modeElement = mustFind<HTMLSelectElement>("#mode");
 const movementModeElement = mustFind<HTMLSelectElement>("#movement-mode");
+const searchModeElement = mustFind<HTMLSelectElement>("#search-mode");
 const sampleElement = mustFind<HTMLSelectElement>("#sample");
 const playbackStatusElement = mustFind<HTMLOutputElement>("#playback-status");
 const playbackPreviousElement = mustFind<HTMLButtonElement>("#playback-prev");
@@ -109,11 +131,16 @@ sampleElement.innerHTML = sampleNames
   .join("");
 
 modeElement.addEventListener("change", () => {
-  mode = modeElement.value as typeof mode;
+  mode = modeElement.value as PaintMode;
 });
 
 movementModeElement.addEventListener("change", () => {
   movementMode = movementModeElement.value as MovementMode;
+  recompute();
+});
+
+searchModeElement.addEventListener("change", () => {
+  searchMode = searchModeElement.value as SearchMode;
   recompute();
 });
 
@@ -166,7 +193,18 @@ mustFind<HTMLButtonElement>("#copy-worksheet").addEventListener(
 );
 
 function recompute(): void {
-  latestResult = runBreadthFirstSearch(grid, movementMode);
+  comparisonExplanation = "";
+
+  if (searchMode === "dijkstra") {
+    latestResult = runDijkstraSearch(grid, movementMode);
+  } else if (searchMode === "compare") {
+    const comparison = comparePathfinding(grid, movementMode);
+    latestResult = comparison.dijkstra;
+    comparisonExplanation = comparison.explanation;
+  } else {
+    latestResult = runBreadthFirstSearch(grid, movementMode);
+  }
+
   playbackFrames = createPlaybackFrames(latestResult);
   playbackIndex = Math.max(0, playbackFrames.length - 1);
   render();
@@ -186,7 +224,7 @@ function render(): void {
       cell.type = "button";
       cell.className = cellClass(point, frame, pathKeys, visitedKeys);
       cell.textContent = cellLabel(point, pathKeys);
-      cell.ariaLabel = `Cell ${x}, ${y}`;
+      cell.ariaLabel = `Cell ${x}, ${y}, ${terrainAt(grid, point)} terrain`;
       cell.addEventListener("click", () => updateCell(point));
       gridElement.append(cell);
     }
@@ -195,11 +233,15 @@ function render(): void {
   metricsElement.innerHTML = `
     <div><dt>Status</dt><dd>${latestResult.found ? "Reachable" : "Unreachable"}</dd></div>
     <div><dt>Distance</dt><dd>${latestResult.distance ?? "—"}</dd></div>
+    <div><dt>Cost</dt><dd>${"cost" in latestResult ? (latestResult.cost ?? "—") : "Unweighted"}</dd></div>
+    <div><dt>Search</dt><dd>${searchLabel(searchMode)}</dd></div>
     <div><dt>Movement</dt><dd>${movementMode === "diagonal" ? "Diagonal" : "Orthogonal"}</dd></div>
     <div><dt>Visited</dt><dd>${latestResult.visitedOrder.length}</dd></div>
     <div><dt>Walls</dt><dd>${grid.walls.length}</dd></div>
+    <div><dt>Terrain</dt><dd>${grid.terrain.length}</dd></div>
   `;
-  explanationElement.textContent = latestResult.explanation;
+  explanationElement.textContent =
+    comparisonExplanation || latestResult.explanation;
   stateElement.value = serializeGrid(grid);
   playbackStatusElement.value = `${frame?.step ?? 0} / ${playbackFrames.length} steps`;
   playbackPreviousElement.disabled = playbackIndex <= 0;
@@ -218,6 +260,8 @@ function updateCell(point: Point): void {
     grid = { ...grid, goal: point };
   } else if (mode === "wall") {
     grid = toggleWall(grid, point);
+  } else if (mode === "terrain") {
+    grid = setTerrain(grid, point, nextTerrain(terrainAt(grid, point)));
   }
   recompute();
 }
@@ -231,6 +275,7 @@ function cellClass(
   const classes = ["cell"];
   if (sameCell(point, grid.start)) classes.push("start");
   if (sameCell(point, grid.goal)) classes.push("goal");
+  classes.push(terrainAt(grid, point));
   if (isWall(grid, point)) classes.push("wall");
   if (visitedKeys.has(key(point))) classes.push("visited");
   if (pathKeys.has(key(point))) classes.push("path");
@@ -243,6 +288,8 @@ function cellLabel(point: Point, pathKeys: Set<string>): string {
   if (sameCell(point, grid.goal)) return "G";
   if (isWall(grid, point)) return "";
   if (pathKeys.has(key(point))) return "·";
+  if (terrainAt(grid, point) === "mud") return "M";
+  if (terrainAt(grid, point) === "water") return "W";
   return "";
 }
 
@@ -256,6 +303,18 @@ function sameCell(left: Point, right: Point): boolean {
 
 function labelSample(name: SampleName): string {
   return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+function nextTerrain(type: TerrainType): TerrainType {
+  if (type === "normal") return "mud";
+  if (type === "mud") return "water";
+  return "normal";
+}
+
+function searchLabel(mode: SearchMode): string {
+  if (mode === "dijkstra") return "Dijkstra";
+  if (mode === "compare") return "Compare";
+  return "BFS";
 }
 
 function setMessage(message: string): void {

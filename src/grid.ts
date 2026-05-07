@@ -4,6 +4,11 @@ export interface Point {
 }
 
 export type MovementMode = "orthogonal" | "diagonal";
+export type TerrainType = "normal" | "mud" | "water";
+
+export interface TerrainCell extends Point {
+  readonly type: TerrainType;
+}
 
 export interface Grid {
   readonly width: number;
@@ -11,6 +16,7 @@ export interface Grid {
   readonly start: Point;
   readonly goal: Point;
   readonly walls: readonly Point[];
+  readonly terrain: readonly TerrainCell[];
 }
 
 interface SerializedGrid {
@@ -19,6 +25,7 @@ interface SerializedGrid {
   readonly start: unknown;
   readonly goal: unknown;
   readonly walls: unknown;
+  readonly terrain?: unknown;
 }
 
 export function createGrid(
@@ -35,7 +42,7 @@ export function createGrid(
     throw new Error("Grid height must be an integer of at least 1.");
   }
 
-  const grid = { width, height, start, goal, walls: [] };
+  const grid = { width, height, start, goal, walls: [], terrain: [] };
   assertPointInBounds(grid, start, "start");
   assertPointInBounds(grid, goal, "goal");
 
@@ -57,8 +64,47 @@ export function toggleWall(grid: Grid, point: Point): Grid {
   const walls = exists
     ? grid.walls.filter((wall) => !samePoint(wall, point))
     : [...grid.walls, normalizePoint(point)];
+  const terrain = exists
+    ? grid.terrain
+    : grid.terrain.filter((cell) => !samePoint(cell, point));
 
-  return { ...grid, walls: sortPoints(uniquePoints(walls)) };
+  return {
+    ...grid,
+    walls: sortPoints(uniquePoints(walls)),
+    terrain: sortTerrain(terrain),
+  };
+}
+
+export function setTerrain(grid: Grid, point: Point, type: TerrainType): Grid {
+  assertPointInBounds(grid, point, "terrain");
+
+  if (
+    samePoint(point, grid.start) ||
+    samePoint(point, grid.goal) ||
+    isWall(grid, point)
+  ) {
+    return grid;
+  }
+
+  const terrain = grid.terrain.filter((cell) => !samePoint(cell, point));
+
+  if (type !== "normal") {
+    terrain.push({ ...normalizePoint(point), type });
+  }
+
+  return { ...grid, terrain: sortTerrain(terrain) };
+}
+
+export function terrainAt(grid: Grid, point: Point): TerrainType {
+  return grid.terrain.find((cell) => samePoint(cell, point))?.type ?? "normal";
+}
+
+export function terrainCost(grid: Grid, point: Point): number {
+  const type = terrainAt(grid, point);
+
+  if (type === "water") return 5;
+  if (type === "mud") return 3;
+  return 1;
 }
 
 export function serializeGrid(grid: Grid): string {
@@ -70,6 +116,7 @@ export function serializeGrid(grid: Grid): string {
       start: grid.start,
       goal: grid.goal,
       walls: sortPoints(uniquePoints(grid.walls)),
+      terrain: sortTerrain(grid.terrain),
     },
     null,
     2,
@@ -106,7 +153,16 @@ export function parseGrid(json: string): Grid {
   const walls = raw.walls.map((wall, index) =>
     parsePoint(wall, `wall ${index + 1}`),
   );
-  const parsedGrid = { ...grid, walls: sortPoints(uniquePoints(walls)) };
+  const terrain = Array.isArray(raw.terrain)
+    ? raw.terrain.map((cell, index) =>
+        parseTerrainCell(cell, `terrain ${index + 1}`),
+      )
+    : [];
+  const parsedGrid = {
+    ...grid,
+    walls: sortPoints(uniquePoints(walls)),
+    terrain: sortTerrain(uniqueTerrain(terrain)),
+  };
   validateGrid(parsedGrid);
 
   return parsedGrid;
@@ -176,6 +232,18 @@ function validateGrid(grid: Grid): void {
       throw new Error("Start and goal cells cannot be walls.");
     }
   }
+
+  for (const cell of grid.terrain) {
+    assertPointInBounds(grid, cell, "terrain");
+
+    if (samePoint(cell, grid.start) || samePoint(cell, grid.goal)) {
+      throw new Error("Start and goal cells cannot have weighted terrain.");
+    }
+
+    if (isWall(grid, cell)) {
+      throw new Error("Wall cells cannot have weighted terrain.");
+    }
+  }
 }
 
 function assertPointInBounds(
@@ -200,6 +268,22 @@ function parsePoint(value: unknown, label: string): Point {
   const x = value.x as number;
   const y = value.y as number;
   return { x, y };
+}
+
+function parseTerrainCell(value: unknown, label: string): TerrainCell {
+  const point = parsePoint(value, label);
+
+  if (!isRecord(value) || !isTerrainType(value.type)) {
+    throw new Error(
+      `The ${label} cell must include a terrain type of normal, mud, or water.`,
+    );
+  }
+
+  return { ...point, type: value.type };
+}
+
+function isTerrainType(value: unknown): value is TerrainType {
+  return value === "normal" || value === "mud" || value === "water";
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -228,6 +312,28 @@ function uniquePoints(points: readonly Point[]): Point[] {
 
 function sortPoints(points: readonly Point[]): Point[] {
   return [...points].sort(
+    (left, right) => left.y - right.y || left.x - right.x,
+  );
+}
+
+function uniqueTerrain(terrain: readonly TerrainCell[]): TerrainCell[] {
+  const byKey = new Map<string, TerrainCell>();
+
+  for (const cell of terrain) {
+    if (cell.type !== "normal") {
+      byKey.set(pointKey(cell), {
+        x: cell.x,
+        y: cell.y,
+        type: cell.type,
+      });
+    }
+  }
+
+  return [...byKey.values()];
+}
+
+function sortTerrain(terrain: readonly TerrainCell[]): TerrainCell[] {
+  return uniqueTerrain(terrain).sort(
     (left, right) => left.y - right.y || left.x - right.x,
   );
 }

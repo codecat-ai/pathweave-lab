@@ -4,6 +4,10 @@ All notable changes to Pathweave Lab will be documented in this file.
 
 ## Unreleased
 
+- Added weighted terrain painting with normal, mud, and water cells.
+- Added deterministic Dijkstra search and BFS-vs-Dijkstra comparison summaries for teaching weighted path cost.
+- Preserved weighted terrain in JSON export/import and share URLs while keeping old shared boards compatible.
+- Added behavior tests for weighted terrain, Dijkstra path selection, comparison explanations, and terrain share-state round-trips.
 - Added copyable classroom worksheet export with board summary, movement mode, student prompts, compact legend, and BFS answer key.
 - Added behavior tests for reachable and unreachable worksheet output.
 - Added optional diagonal BFS movement mode while keeping orthogonal movement as the default.

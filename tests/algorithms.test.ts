@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { createPlaybackFrames, runBreadthFirstSearch } from "../src/algorithms";
-import { createGrid, toggleWall } from "../src/grid";
+import {
+  comparePathfinding,
+  createPlaybackFrames,
+  runBreadthFirstSearch,
+  runDijkstraSearch,
+} from "../src/algorithms";
+import { createGrid, setTerrain, toggleWall } from "../src/grid";
 
 describe("runBreadthFirstSearch", () => {
   it("returns a direct shortest path on an empty grid", () => {
@@ -81,6 +86,68 @@ describe("runBreadthFirstSearch", () => {
     expect(result.path).toEqual([]);
     expect(result.visitedOrder).not.toContainEqual(grid.goal);
     expect(result.explanation).toContain("unreachable");
+  });
+});
+
+describe("runDijkstraSearch", () => {
+  it("chooses a lower-cost weighted path over a shorter expensive path", () => {
+    let grid = createGrid(4, 2, { x: 0, y: 0 }, { x: 3, y: 0 });
+    grid = setTerrain(grid, { x: 1, y: 0 }, "water");
+    grid = setTerrain(grid, { x: 2, y: 0 }, "water");
+
+    const bfs = runBreadthFirstSearch(grid);
+    const dijkstra = runDijkstraSearch(grid);
+
+    expect(bfs.found).toBe(true);
+    expect(bfs.distance).toBe(3);
+    expect(bfs.path).toEqual([
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+      { x: 3, y: 0 },
+    ]);
+    expect(dijkstra.found).toBe(true);
+    expect(dijkstra.distance).toBe(5);
+    expect(dijkstra.cost).toBe(5);
+    expect(dijkstra.path).toEqual([
+      { x: 0, y: 0 },
+      { x: 0, y: 1 },
+      { x: 1, y: 1 },
+      { x: 2, y: 1 },
+      { x: 3, y: 1 },
+      { x: 3, y: 0 },
+    ]);
+    expect(dijkstra.explanation).toContain("Dijkstra");
+    expect(dijkstra.explanation).toContain("weighted cost of 5");
+  });
+
+  it("matches BFS step distance on unweighted terrain", () => {
+    const grid = createGrid(4, 1, { x: 0, y: 0 }, { x: 3, y: 0 });
+
+    const result = runDijkstraSearch(grid);
+
+    expect(result.found).toBe(true);
+    expect(result.distance).toBe(3);
+    expect(result.cost).toBe(3);
+    expect(result.path).toEqual(runBreadthFirstSearch(grid).path);
+  });
+});
+
+describe("comparePathfinding", () => {
+  it("summarizes BFS steps against Dijkstra weighted cost in plain language", () => {
+    let grid = createGrid(4, 2, { x: 0, y: 0 }, { x: 3, y: 0 });
+    grid = setTerrain(grid, { x: 1, y: 0 }, "water");
+    grid = setTerrain(grid, { x: 2, y: 0 }, "water");
+
+    const comparison = comparePathfinding(grid);
+
+    expect(comparison.bfs.distance).toBe(3);
+    expect(comparison.dijkstra.cost).toBe(5);
+    expect(comparison.explanation).toContain("BFS reaches the goal in 3 steps");
+    expect(comparison.explanation).toContain(
+      "Dijkstra chooses a route with weighted cost 5",
+    );
+    expect(comparison.explanation).toContain("weighted terrain");
   });
 });
 
