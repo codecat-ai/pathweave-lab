@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { createGrid, parseGrid, serializeGrid, toggleWall } from "../src/grid";
+import {
+  createGrid,
+  parseGrid,
+  serializeGrid,
+  setTerrain,
+  terrainCost,
+  terrainAt,
+  toggleWall,
+} from "../src/grid";
 
 describe("grid model", () => {
   it("prevents start and goal cells from becoming walls", () => {
@@ -15,6 +23,34 @@ describe("grid model", () => {
     grid = toggleWall(grid, { x: 2, y: 2 });
 
     expect(parseGrid(serializeGrid(grid))).toEqual(grid);
+  });
+
+  it("stores weighted terrain while keeping normal terrain implicit", () => {
+    let grid = createGrid(4, 2, { x: 0, y: 0 }, { x: 3, y: 0 });
+    grid = setTerrain(grid, { x: 1, y: 0 }, "mud");
+    grid = setTerrain(grid, { x: 2, y: 0 }, "water");
+    grid = setTerrain(grid, { x: 1, y: 0 }, "normal");
+
+    expect(grid.terrain).toEqual([{ x: 2, y: 0, type: "water" }]);
+    expect(terrainAt(grid, { x: 1, y: 0 })).toBe("normal");
+    expect(terrainAt(grid, { x: 2, y: 0 })).toBe("water");
+    expect(terrainCost(grid, { x: 1, y: 0 })).toBe(1);
+    expect(terrainCost(grid, { x: 2, y: 0 })).toBeGreaterThan(1);
+  });
+
+  it("loads old board JSON without terrain as normal terrain", () => {
+    const grid = parseGrid(
+      JSON.stringify({
+        width: 3,
+        height: 2,
+        start: { x: 0, y: 0 },
+        goal: { x: 2, y: 0 },
+        walls: [],
+      }),
+    );
+
+    expect(grid.terrain).toEqual([]);
+    expect(terrainAt(grid, { x: 1, y: 0 })).toBe("normal");
   });
 
   it("rejects malformed JSON and invalid board state", () => {

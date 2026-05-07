@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { parseGrid, serializeGrid, toggleWall, createGrid } from "../src/grid";
+import {
+  createGrid,
+  parseGrid,
+  serializeGrid,
+  setTerrain,
+  toggleWall,
+} from "../src/grid";
 import {
   decodeAppStateFromHash,
   decodeBoardFromHash,
@@ -29,6 +35,19 @@ describe("share URL board encoding", () => {
     expect(decodeAppStateFromHash(`#board=${encoded}`)).toEqual({
       grid,
       movementMode: "diagonal",
+    });
+  });
+
+  it("round-trips weighted terrain with shared app state", () => {
+    let grid = createGrid(4, 2, { x: 0, y: 0 }, { x: 3, y: 0 });
+    grid = setTerrain(grid, { x: 1, y: 0 }, "mud");
+    grid = setTerrain(grid, { x: 2, y: 0 }, "water");
+
+    const encoded = encodeAppState({ grid, movementMode: "orthogonal" });
+
+    expect(decodeAppStateFromHash(`#board=${encoded}`)).toEqual({
+      grid,
+      movementMode: "orthogonal",
     });
   });
 

@@ -131,6 +131,14 @@ button:disabled {
   color: #e0f2fe;
   border: 1px solid #334155;
 }
+.cell.mud {
+  background: #8b5e34;
+  color: #fff7ed;
+}
+.cell.water {
+  background: #1d4ed8;
+  color: #dbeafe;
+}
 .cell.visited {
   background: #164e63;
 }

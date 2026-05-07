@@ -6,19 +6,22 @@ Pathweave Lab is an interactive, local-first pathfinding playground for explaini
 
 ## Problem and motivation
 
-Pathfinding is easier to understand when learners can change the board and immediately see what the algorithm explores. Pathweave Lab provides a small static web app for sketching walls, moving start and goal cells, running breadth-first search (BFS), and reading concise metrics without accounts, telemetry, or a backend.
+Pathfinding is easier to understand when learners can change the board and immediately see what the algorithm explores. Pathweave Lab provides a small static web app for sketching walls, painting weighted terrain, moving start and goal cells, comparing breadth-first search (BFS) with Dijkstra search, and reading concise metrics without accounts, telemetry, or a backend.
 
 ## Features
 
 - Interactive grid for toggling walls and moving start/goal cells.
+- Weighted terrain painting with normal, mud, and water cells.
 - Breadth-first search with deterministic shortest paths on unweighted grids.
+- Deterministic Dijkstra search for lowest-cost paths on weighted terrain.
+- BFS vs Dijkstra comparison summaries that explain steps versus weighted cost.
 - Optional orthogonal or diagonal movement lessons, with orthogonal kept as the default.
-- Step-by-step BFS playback controls for inspecting one visited cell at a time.
-- Visited-cell, distance, movement-mode, wall-count, and reachable/unreachable metrics.
+- Step-by-step playback controls for inspecting one visited cell at a time.
+- Visited-cell, distance, weighted-cost, movement-mode, wall-count, terrain-count, and reachable/unreachable metrics.
 - Plain-language explanation of each search result.
 - Deterministic sample boards for repeatable lessons.
 - JSON export/import for local sharing and reproducible examples.
-- Shareable encoded `#board=` URLs for loading board states and movement mode without a server.
+- Shareable encoded `#board=` URLs for loading board states, terrain, and movement mode without a server.
 - Copyable classroom worksheet text with board summary, student prompts, compact legend, and BFS answer key.
 - Pure TypeScript grid and search functions covered by behavior tests.
 
@@ -46,12 +49,14 @@ Then open the local URL printed by Vite in your browser.
 
 1. Choose the **Braid**, **Rooms**, or **Corridor** sample board.
 2. Select **Toggle walls** and click cells to reshape the board.
-3. Select **Move start** or **Move goal** to reposition endpoints.
-4. Switch **Movement** between **Orthogonal (4-way)** and **Diagonal (8-way)** to compare how BFS layers change.
-5. Click **Run BFS** and compare the visited cells with the final path.
-6. Use **Reset playback**, **Prev**, and **Next** to inspect each visited cell.
-7. Copy the JSON state or use **Copy share URL** to share the same board and movement mode locally.
-8. Use **Copy worksheet** to place a concise Markdown prompt and answer key into a lesson handout.
+3. Select **Cycle terrain** to paint normal, mud, and water cells.
+4. Select **Move start** or **Move goal** to reposition endpoints.
+5. Switch **Search** between **BFS (unweighted)**, **Dijkstra (weighted)**, and **Compare BFS and Dijkstra**.
+6. Switch **Movement** between **Orthogonal (4-way)** and **Diagonal (8-way)** to compare how movement rules change the result.
+7. Click **Run search** and compare visited cells, steps, weighted cost, and the final path.
+8. Use **Reset playback**, **Prev**, and **Next** to inspect each visited cell.
+9. Copy the JSON state or use **Copy share URL** to share the same board, terrain, and movement mode locally.
+10. Use **Copy worksheet** to place a concise Markdown prompt and answer key into a lesson handout.
 
 ## Configuration
 
@@ -72,7 +77,7 @@ npm run build
 
 ## Testing
 
-Behavior tests cover shortest-path results, orthogonal and diagonal movement, diagonal corner-cut prevention, BFS playback frames, wall handling, unreachable boards, worksheet export text, JSON round-tripping, share URL encoding, malformed input rejection, and deterministic sample generation.
+Behavior tests cover shortest-path results, weighted terrain costs, Dijkstra lower-cost path selection, BFS-vs-Dijkstra explanations, orthogonal and diagonal movement, diagonal corner-cut prevention, playback frames, wall handling, unreachable boards, worksheet export text, JSON round-tripping, share URL encoding, malformed input rejection, and deterministic sample generation.
 
 ```bash
 npm test -- --run
@@ -80,7 +85,6 @@ npm test -- --run
 
 ## Roadmap
 
-- Weighted terrain and Dijkstra comparison mode.
 - Additional classroom worksheet variants.
 - Optional dark/light theme toggle.
 
