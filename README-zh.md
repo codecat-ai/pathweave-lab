@@ -17,6 +17,7 @@ Pathweave Lab 是一个交互式、本地优先的寻路实验场，用于讲解
 - 用 BFS 与 Dijkstra 对比摘要解释步数和加权成本的区别。
 - 提供正交或对角两种移动课程模式，并保持正交为默认行为。
 - 提供分步回放控制，可一次检查一个已访问单元格。
+- 提供可选浅色主题切换，并保持深色模式为默认且按浏览器保存。
 - 显示已访问单元格数、距离、加权成本、移动模式、墙体数、地形数以及可达/不可达状态。
 - 用通俗语言解释每次搜索结果。
 - 提供确定性的示例棋盘，便于重复教学。
@@ -53,14 +54,15 @@ npm run dev
 4. 选择 **Move start** 或 **Move goal** 来移动端点。
 5. 在 **Search** 中切换 **BFS (unweighted)**、**Dijkstra (weighted)** 和 **Compare BFS and Dijkstra**。
 6. 在 **Movement** 中切换 **Orthogonal (4-way)** 与 **Diagonal (8-way)**，比较移动规则如何改变结果。
-7. 点击 **Run search**，比较已访问单元格、步数、加权成本和最终路径。
-8. 使用 **Reset playback**、**Prev** 和 **Next** 检查每个已访问单元格。
-9. 复制 JSON 状态，或使用 **Copy share URL** 在本地分享同一个棋盘、地形和移动模式。
-10. 使用 **Copy worksheet** 将简洁的 Markdown 题目和答案复制到课程讲义中。
+7. 使用 **Light mode** 或 **Dark mode** 切换浏览器主题。
+8. 点击 **Run search**，比较已访问单元格、步数、加权成本和最终路径。
+9. 使用 **Reset playback**、**Prev** 和 **Next** 检查每个已访问单元格。
+10. 复制 JSON 状态，或使用 **Copy share URL** 在本地分享同一个棋盘、地形和移动模式。
+11. 使用 **Copy worksheet** 将简洁的 Markdown 题目和答案复制到课程讲义中。
 
 ## 配置
 
-MVP 中没有运行时配置文件。棋盘尺寸和示例名称定义在 `src/app.ts` 中，纯网格、练习文本与分享行为位于 `src/grid.ts`、`src/worksheet.ts`、`src/shareUrl.ts`、`src/algorithms.ts` 和 `src/samples.ts`。
+MVP 中没有运行时配置文件。棋盘尺寸和示例名称定义在 `src/app.ts` 中，纯网格、主题、练习文本与分享行为位于 `src/grid.ts`、`src/theme.ts`、`src/worksheet.ts`、`src/shareUrl.ts`、`src/algorithms.ts` 和 `src/samples.ts`。
 
 ## 开发
 
@@ -77,7 +79,7 @@ npm run build
 
 ## 测试
 
-行为测试覆盖最短路径结果、加权地形成本、Dijkstra 低成本路径选择、BFS 与 Dijkstra 对比解释、正交和对角移动、对角穿角阻止、回放帧、墙体处理、不可达棋盘、练习文本导出、JSON 往返、分享 URL 编码、错误输入拒绝以及确定性示例生成。
+行为测试覆盖最短路径结果、加权地形成本、Dijkstra 低成本路径选择、BFS 与 Dijkstra 对比解释、正交和对角移动、对角穿角阻止、回放帧、墙体处理、不可达棋盘、练习文本导出、JSON 往返、分享 URL 编码、主题偏好存储、错误输入拒绝以及确定性示例生成。
 
 ```bash
 npm test -- --run
@@ -86,7 +88,6 @@ npm test -- --run
 ## 路线图
 
 - 更多课堂练习文本变体。
-- 可选的深色/浅色主题切换。
 
 ## 贡献
 

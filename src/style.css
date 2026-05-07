@@ -1,6 +1,40 @@
 :root {
-  color: #e6edf3;
-  background: #0b1020;
+  color-scheme: dark;
+  --page-text: #e6edf3;
+  --page-background: #0b1020;
+  --panel-background: #121a2fcc;
+  --panel-border: #243044;
+  --hero-glow: #2557d633;
+  --hero-shadow: #0008;
+  --muted-text: #b8c7dd;
+  --eyebrow-text: #7dd3fc;
+  --field-background: #060a14;
+  --field-border: #334155;
+  --field-text: #e6edf3;
+  --button-background: #38bdf8;
+  --button-text: #06111f;
+  --status-text: #bae6fd;
+  --metric-border: #263348;
+  --metric-label: #93a4bd;
+  --cell-background: #1e293b;
+  --cell-text: #e0f2fe;
+  --cell-border: #334155;
+  --cell-mud-background: #8b5e34;
+  --cell-mud-text: #fff7ed;
+  --cell-water-background: #1d4ed8;
+  --cell-water-text: #dbeafe;
+  --cell-visited-background: #164e63;
+  --cell-path-background: #facc15;
+  --cell-path-text: #111827;
+  --cell-current-outline: #f8fafc;
+  --cell-wall-background: #020617;
+  --cell-wall-border: #64748b;
+  --cell-start-background: #22c55e;
+  --cell-start-text: #052e16;
+  --cell-goal-background: #fb7185;
+  --cell-goal-text: #4c0519;
+  color: var(--page-text);
+  background: var(--page-background);
   font-family:
     Inter,
     ui-sans-serif,
@@ -9,6 +43,43 @@
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --page-text: #172033;
+  --page-background: #f7fafc;
+  --panel-background: #ffffffd9;
+  --panel-border: #cbd5e1;
+  --hero-glow: #38bdf840;
+  --hero-shadow: #94a3b840;
+  --muted-text: #44546a;
+  --eyebrow-text: #0369a1;
+  --field-background: #ffffff;
+  --field-border: #94a3b8;
+  --field-text: #172033;
+  --button-background: #0369a1;
+  --button-text: #ffffff;
+  --status-text: #075985;
+  --metric-border: #d7dee8;
+  --metric-label: #536579;
+  --cell-background: #e2e8f0;
+  --cell-text: #0f172a;
+  --cell-border: #94a3b8;
+  --cell-mud-background: #9a6b38;
+  --cell-mud-text: #fff7ed;
+  --cell-water-background: #2563eb;
+  --cell-water-text: #eff6ff;
+  --cell-visited-background: #67e8f9;
+  --cell-path-background: #eab308;
+  --cell-path-text: #1f2937;
+  --cell-current-outline: #0f172a;
+  --cell-wall-background: #334155;
+  --cell-wall-border: #0f172a;
+  --cell-start-background: #16a34a;
+  --cell-start-text: #ffffff;
+  --cell-goal-background: #e11d48;
+  --cell-goal-text: #ffffff;
 }
 
 * {
@@ -29,15 +100,20 @@ textarea {
   padding: 32px 0;
 }
 .hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: start;
   padding: 28px;
-  border: 1px solid #243044;
+  border: 1px solid var(--panel-border);
   border-radius: 28px;
   background:
-    radial-gradient(circle at top left, #2557d633, transparent 38%), #121a2f;
-  box-shadow: 0 24px 80px #0008;
+    radial-gradient(circle at top left, var(--hero-glow), transparent 38%),
+    var(--panel-background);
+  box-shadow: 0 24px 80px var(--hero-shadow);
 }
 .eyebrow {
-  color: #7dd3fc;
+  color: var(--eyebrow-text);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-size: 0.8rem;
@@ -60,9 +136,9 @@ h2 {
 }
 .panel,
 .board-card {
-  border: 1px solid #243044;
+  border: 1px solid var(--panel-border);
   border-radius: 22px;
-  background: #121a2fcc;
+  background: var(--panel-background);
   padding: 18px;
 }
 .controls {
@@ -72,25 +148,28 @@ h2 {
 label {
   display: grid;
   gap: 6px;
-  color: #b8c7dd;
+  color: var(--muted-text);
 }
 select,
 textarea {
   width: 100%;
-  border: 1px solid #334155;
+  border: 1px solid var(--field-border);
   border-radius: 12px;
-  background: #060a14;
-  color: #e6edf3;
+  background: var(--field-background);
+  color: var(--field-text);
   padding: 10px;
 }
 button {
   border: 0;
   border-radius: 12px;
-  background: #38bdf8;
-  color: #06111f;
+  background: var(--button-background);
+  color: var(--button-text);
   font-weight: 800;
   padding: 10px 12px;
   cursor: pointer;
+}
+.theme-toggle {
+  flex: 0 0 auto;
 }
 button:hover {
   filter: brightness(1.08);
@@ -113,7 +192,7 @@ button:disabled {
   grid-column: 1 / -1;
 }
 #playback-status {
-  color: #bae6fd;
+  color: var(--status-text);
   font-weight: 800;
 }
 .grid {
@@ -127,40 +206,40 @@ button:disabled {
   min-width: 0;
   padding: 0;
   border-radius: 8px;
-  background: #1e293b;
-  color: #e0f2fe;
-  border: 1px solid #334155;
+  background: var(--cell-background);
+  color: var(--cell-text);
+  border: 1px solid var(--cell-border);
 }
 .cell.mud {
-  background: #8b5e34;
-  color: #fff7ed;
+  background: var(--cell-mud-background);
+  color: var(--cell-mud-text);
 }
 .cell.water {
-  background: #1d4ed8;
-  color: #dbeafe;
+  background: var(--cell-water-background);
+  color: var(--cell-water-text);
 }
 .cell.visited {
-  background: #164e63;
+  background: var(--cell-visited-background);
 }
 .cell.path {
-  background: #facc15;
-  color: #111827;
+  background: var(--cell-path-background);
+  color: var(--cell-path-text);
 }
 .cell.current {
-  outline: 3px solid #f8fafc;
+  outline: 3px solid var(--cell-current-outline);
   outline-offset: -3px;
 }
 .cell.wall {
-  background: #020617;
-  border-color: #64748b;
+  background: var(--cell-wall-background);
+  border-color: var(--cell-wall-border);
 }
 .cell.start {
-  background: #22c55e;
-  color: #052e16;
+  background: var(--cell-start-background);
+  color: var(--cell-start-text);
 }
 .cell.goal {
-  background: #fb7185;
-  color: #4c0519;
+  background: var(--cell-goal-background);
+  color: var(--cell-goal-text);
 }
 dl {
   display: grid;
@@ -169,11 +248,11 @@ dl {
 dl div {
   display: flex;
   justify-content: space-between;
-  border-bottom: 1px solid #263348;
+  border-bottom: 1px solid var(--metric-border);
   padding-bottom: 8px;
 }
 dt {
-  color: #93a4bd;
+  color: var(--metric-label);
 }
 dd {
   margin: 0;
@@ -191,11 +270,15 @@ dd {
   margin-top: 12px;
 }
 #message {
-  color: #bae6fd;
+  color: var(--status-text);
   min-height: 1.4em;
 }
 @media (max-width: 900px) {
   .workspace {
     grid-template-columns: 1fr;
+  }
+
+  .hero {
+    display: grid;
   }
 }
