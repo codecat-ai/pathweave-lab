@@ -25,6 +25,7 @@ import {
   parseBoardHash,
 } from "./shareUrl";
 import { nextTheme, persistTheme, readStoredTheme, type Theme } from "./theme";
+import { createBoardSvg } from "./svgExport";
 import { createWorksheetText } from "./worksheet";
 import "./style.css";
 
@@ -115,6 +116,7 @@ app.innerHTML = `
       <button id="export">Export current board</button>
       <button id="import">Import board</button>
       <button id="copy-share-url">Copy share URL</button>
+      <button id="copy-svg">Copy SVG</button>
       <button id="copy-worksheet">Copy worksheet</button>
     </div>
     <p id="message" role="status"></p>
@@ -202,6 +204,10 @@ mustFind<HTMLButtonElement>("#import").addEventListener("click", () => {
 mustFind<HTMLButtonElement>("#copy-share-url").addEventListener(
   "click",
   () => void copyShareUrl(),
+);
+mustFind<HTMLButtonElement>("#copy-svg").addEventListener(
+  "click",
+  () => void copySvg(),
 );
 mustFind<HTMLButtonElement>("#copy-worksheet").addEventListener(
   "click",
@@ -397,6 +403,34 @@ async function copyWorksheet(): Promise<void> {
     stateElement.value = worksheet;
     setMessage(
       "Worksheet text placed in the board text area because clipboard copy failed.",
+    );
+  }
+}
+
+async function copySvg(): Promise<void> {
+  const svg = createBoardSvg({
+    grid,
+    result: latestResult,
+    movementMode,
+    searchLabel: searchLabel(searchMode),
+    searchOptions: comparisonExplanation ? [comparisonExplanation] : [],
+  });
+
+  if (!navigator.clipboard?.writeText) {
+    stateElement.value = svg;
+    setMessage(
+      "SVG placed in the board text area because clipboard is unavailable.",
+    );
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(svg);
+    setMessage("SVG copied to clipboard.");
+  } catch {
+    stateElement.value = svg;
+    setMessage(
+      "SVG placed in the board text area because clipboard copy failed.",
     );
   }
 }
