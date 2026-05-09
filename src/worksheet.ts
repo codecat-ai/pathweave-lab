@@ -7,11 +7,27 @@ import {
   samePoint,
 } from "./grid";
 
+export type WorksheetVariant = "concise" | "guided";
+
+export const worksheetVariants = [
+  { value: "concise", label: "Concise" },
+  { value: "guided", label: "Guided" },
+] as const satisfies ReadonlyArray<{
+  value: WorksheetVariant;
+  label: string;
+}>;
+
+export interface WorksheetOptions {
+  variant?: WorksheetVariant;
+}
+
 export function createWorksheetText(
   grid: Grid,
   movementMode: MovementMode,
   result: BreadthFirstSearchResult,
+  options: WorksheetOptions = {},
 ): string {
+  const variant = options.variant ?? "concise";
   const reachableSummary = result.found
     ? `Reachable in ${result.distance ?? 0} steps`
     : "Unreachable";
@@ -50,6 +66,7 @@ export function createWorksheetText(
     "",
     "## Student Task",
     ...studentTask,
+    ...guidedPromptSection(variant),
     "",
     "## Board Legend",
     "S = start, G = goal, # = wall, . = open",
@@ -61,6 +78,18 @@ export function createWorksheetText(
     "## Answer Key",
     ...answerKey,
   ].join("\n");
+}
+
+function guidedPromptSection(variant: WorksheetVariant): string[] {
+  if (variant === "concise") return [];
+
+  return [
+    "",
+    "## Guided Prompts",
+    "1. Before tracing, predict whether the goal is reachable and estimate the shortest path length.",
+    "2. Circle the first three cells BFS visits after S. What do they have in common?",
+    "3. After tracing, compare your prediction with the answer key. What changed in your reasoning?",
+  ];
 }
 
 function formatBoard(grid: Grid): string[] {

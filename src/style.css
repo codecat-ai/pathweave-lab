@@ -269,6 +269,9 @@ dd {
   flex-wrap: wrap;
   margin-top: 12px;
 }
+.inline-control {
+  min-width: 180px;
+}
 #message {
   color: var(--status-text);
   min-height: 1.4em;

@@ -23,13 +23,13 @@ Pathweave Lab 是一个交互式、本地优先的寻路实验场，用于讲解
 - 提供确定性的示例棋盘，便于重复教学。
 - 通过 JSON 导出/导入在本地分享和复现实例。
 - 使用可分享的编码 `#board=` URL，无需服务器即可加载棋盘状态、地形和移动模式。
-- 可复制课堂练习文本，包含棋盘摘要、学生任务、紧凑图例和 BFS 答案。
+- 可复制课堂练习变体：默认的简洁讲义，或带有额外预测与反思提示的引导式讲义。
 - 可复制独立 SVG 棋盘快照，包含标题、图例、指标、地形、已访问单元格和最终路径。
 - 纯 TypeScript 网格与搜索函数，并由行为测试覆盖。
 
 ## 安装
 
-Pathweave Lab 尚未发布到任何包注册表。请使用 GitHub 源码检出：
+请使用 GitHub 源码检出：
 
 ```bash
 git clone https://github.com/codecat-ai/pathweave-lab.git
@@ -60,11 +60,11 @@ npm run dev
 9. 使用 **Reset playback**、**Prev** 和 **Next** 检查每个已访问单元格。
 10. 复制 JSON 状态，或使用 **Copy share URL** 在本地分享同一个棋盘、地形和移动模式。
 11. 使用 **Copy SVG** 复制独立棋盘快照，用于幻灯片、练习纸、LMS 页面或错误报告。
-12. 使用 **Copy worksheet** 将简洁的 Markdown 题目和答案复制到课程讲义中。
+12. 在练习文本控件旁选择 **Concise** 或 **Guided**，然后使用 **Copy worksheet** 将所选 Markdown 题目和答案复制到课程讲义中。
 
 ## 配置
 
-MVP 中没有运行时配置文件。棋盘尺寸和示例名称定义在 `src/app.ts` 中，纯网格、主题、练习文本、SVG 导出与分享行为位于 `src/grid.ts`、`src/theme.ts`、`src/worksheet.ts`、`src/svgExport.ts`、`src/shareUrl.ts`、`src/algorithms.ts` 和 `src/samples.ts`。
+MVP 中没有运行时配置文件。棋盘尺寸、示例名称和练习文本变体控件定义在 `src/app.ts` 中，纯网格、主题、练习文本、SVG 导出与分享行为位于 `src/grid.ts`、`src/theme.ts`、`src/worksheet.ts`、`src/svgExport.ts`、`src/shareUrl.ts`、`src/algorithms.ts` 和 `src/samples.ts`。练习文本变体是 `src/worksheet.ts` 中确定性的 TypeScript 格式化选项。
 
 ## 开发
 
@@ -81,7 +81,7 @@ npm run build
 
 ## 测试
 
-行为测试覆盖最短路径结果、加权地形成本、Dijkstra 低成本路径选择、BFS 与 Dijkstra 对比解释、正交和对角移动、对角穿角阻止、回放帧、墙体处理、不可达棋盘、练习文本导出、确定性 SVG 导出、JSON 往返、分享 URL 编码、主题偏好存储、错误输入拒绝以及确定性示例生成。
+行为测试覆盖最短路径结果、加权地形成本、Dijkstra 低成本路径选择、BFS 与 Dijkstra 对比解释、正交和对角移动、对角穿角阻止、回放帧、墙体处理、不可达棋盘、简洁与引导式练习文本导出、确定性 SVG 导出、JSON 往返、分享 URL 编码、主题偏好存储、错误输入拒绝以及确定性示例生成。
 
 ```bash
 npm test -- --run
@@ -89,7 +89,7 @@ npm test -- --run
 
 ## 路线图
 
-- 更多课堂练习文本变体。
+- 提供可打印练习纸版式预览，便于教师在复制前检查课堂讲义。
 
 ## 贡献
 
