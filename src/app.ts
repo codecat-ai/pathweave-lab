@@ -26,7 +26,11 @@ import {
 } from "./shareUrl";
 import { nextTheme, persistTheme, readStoredTheme, type Theme } from "./theme";
 import { createBoardSvg } from "./svgExport";
-import { createWorksheetText } from "./worksheet";
+import {
+  createWorksheetText,
+  worksheetVariants,
+  type WorksheetVariant,
+} from "./worksheet";
 import "./style.css";
 
 const width = 16;
@@ -38,6 +42,7 @@ type SearchResult = BreadthFirstSearchResult | DijkstraSearchResult;
 let mode: PaintMode = "wall";
 let searchMode: SearchMode = "bfs";
 let movementMode: MovementMode = "orthogonal";
+let worksheetVariant: WorksheetVariant = "concise";
 let grid = createSampleGrid("braid", width, height);
 let latestResult: SearchResult = runBreadthFirstSearch(grid, movementMode);
 let comparisonExplanation = "";
@@ -117,6 +122,9 @@ app.innerHTML = `
       <button id="import">Import board</button>
       <button id="copy-share-url">Copy share URL</button>
       <button id="copy-svg">Copy SVG</button>
+      <label class="inline-control">Worksheet
+        <select id="worksheet-variant"></select>
+      </label>
       <button id="copy-worksheet">Copy worksheet</button>
     </div>
     <p id="message" role="status"></p>
@@ -131,6 +139,8 @@ const messageElement = mustFind<HTMLElement>("#message");
 const modeElement = mustFind<HTMLSelectElement>("#mode");
 const movementModeElement = mustFind<HTMLSelectElement>("#movement-mode");
 const searchModeElement = mustFind<HTMLSelectElement>("#search-mode");
+const worksheetVariantElement =
+  mustFind<HTMLSelectElement>("#worksheet-variant");
 const sampleElement = mustFind<HTMLSelectElement>("#sample");
 const playbackStatusElement = mustFind<HTMLOutputElement>("#playback-status");
 const playbackPreviousElement = mustFind<HTMLButtonElement>("#playback-prev");
@@ -140,6 +150,9 @@ const themeToggleElement = mustFind<HTMLButtonElement>("#theme-toggle");
 
 sampleElement.innerHTML = sampleNames
   .map((name) => `<option value="${name}">${labelSample(name)}</option>`)
+  .join("");
+worksheetVariantElement.innerHTML = worksheetVariants
+  .map(({ value, label }) => `<option value="${value}">${label}</option>`)
   .join("");
 
 modeElement.addEventListener("change", () => {
@@ -154,6 +167,10 @@ movementModeElement.addEventListener("change", () => {
 searchModeElement.addEventListener("change", () => {
   searchMode = searchModeElement.value as SearchMode;
   recompute();
+});
+
+worksheetVariantElement.addEventListener("change", () => {
+  worksheetVariant = worksheetVariantElement.value as WorksheetVariant;
 });
 
 sampleElement.addEventListener("change", () => {
@@ -361,6 +378,12 @@ function searchLabel(mode: SearchMode): string {
   return "BFS";
 }
 
+function worksheetVariantLabel(variant: WorksheetVariant): string {
+  return (
+    worksheetVariants.find(({ value }) => value === variant)?.label ?? "Concise"
+  );
+}
+
 function setMessage(message: string): void {
   messageElement.textContent = message;
 }
@@ -386,23 +409,26 @@ async function copyShareUrl(): Promise<void> {
 }
 
 async function copyWorksheet(): Promise<void> {
-  const worksheet = createWorksheetText(grid, movementMode, latestResult);
+  const worksheet = createWorksheetText(grid, movementMode, latestResult, {
+    variant: worksheetVariant,
+  });
+  const variantLabel = worksheetVariantLabel(worksheetVariant);
 
   if (!navigator.clipboard?.writeText) {
     stateElement.value = worksheet;
     setMessage(
-      "Worksheet text placed in the board text area because clipboard is unavailable.",
+      `${variantLabel} worksheet text placed in the board text area because clipboard is unavailable.`,
     );
     return;
   }
 
   try {
     await navigator.clipboard.writeText(worksheet);
-    setMessage("Worksheet copied to clipboard.");
+    setMessage(`${variantLabel} worksheet copied to clipboard.`);
   } catch {
     stateElement.value = worksheet;
     setMessage(
-      "Worksheet text placed in the board text area because clipboard copy failed.",
+      `${variantLabel} worksheet text placed in the board text area because clipboard copy failed.`,
     );
   }
 }

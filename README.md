@@ -23,13 +23,13 @@ Pathfinding is easier to understand when learners can change the board and immed
 - Deterministic sample boards for repeatable lessons.
 - JSON export/import for local sharing and reproducible examples.
 - Shareable encoded `#board=` URLs for loading board states, terrain, and movement mode without a server.
-- Copyable classroom worksheet text with board summary, student prompts, compact legend, and BFS answer key.
+- Copyable classroom worksheet variants: concise default handouts or guided handouts with extra prediction and reflection prompts.
 - Copyable standalone SVG board snapshots with title, legend, metrics, terrain, visited cells, and final path.
 - Pure TypeScript grid and search functions covered by behavior tests.
 
 ## Installation
 
-Pathweave Lab is not published to a package registry. Use the GitHub source checkout:
+Use the GitHub source checkout:
 
 ```bash
 git clone https://github.com/codecat-ai/pathweave-lab.git
@@ -60,11 +60,11 @@ Then open the local URL printed by Vite in your browser.
 9. Use **Reset playback**, **Prev**, and **Next** to inspect each visited cell.
 10. Copy the JSON state or use **Copy share URL** to share the same board, terrain, and movement mode locally.
 11. Use **Copy SVG** to copy a standalone board snapshot for slides, worksheets, LMS pages, or bug reports.
-12. Use **Copy worksheet** to place a concise Markdown prompt and answer key into a lesson handout.
+12. Choose **Concise** or **Guided** next to the worksheet control, then use **Copy worksheet** to place the selected Markdown prompt and answer key into a lesson handout.
 
 ## Configuration
 
-There is no runtime configuration file in the MVP. Board dimensions and sample names are defined in `src/app.ts`, while pure grid, theme, worksheet, SVG export, and sharing behavior lives in `src/grid.ts`, `src/theme.ts`, `src/worksheet.ts`, `src/svgExport.ts`, `src/shareUrl.ts`, `src/algorithms.ts`, and `src/samples.ts`.
+There is no runtime configuration file in the MVP. Board dimensions, sample names, and worksheet variant controls are defined in `src/app.ts`, while pure grid, theme, worksheet, SVG export, and sharing behavior lives in `src/grid.ts`, `src/theme.ts`, `src/worksheet.ts`, `src/svgExport.ts`, `src/shareUrl.ts`, `src/algorithms.ts`, and `src/samples.ts`. Worksheet variants are deterministic TypeScript formatter options in `src/worksheet.ts`.
 
 ## Development
 
@@ -81,7 +81,7 @@ npm run build
 
 ## Testing
 
-Behavior tests cover shortest-path results, weighted terrain costs, Dijkstra lower-cost path selection, BFS-vs-Dijkstra explanations, orthogonal and diagonal movement, diagonal corner-cut prevention, playback frames, wall handling, unreachable boards, worksheet export text, deterministic SVG export, JSON round-tripping, share URL encoding, theme preference storage, malformed input rejection, and deterministic sample generation.
+Behavior tests cover shortest-path results, weighted terrain costs, Dijkstra lower-cost path selection, BFS-vs-Dijkstra explanations, orthogonal and diagonal movement, diagonal corner-cut prevention, playback frames, wall handling, unreachable boards, concise and guided worksheet export text, deterministic SVG export, JSON round-tripping, share URL encoding, theme preference storage, malformed input rejection, and deterministic sample generation.
 
 ```bash
 npm test -- --run
@@ -89,7 +89,7 @@ npm test -- --run
 
 ## Roadmap
 
-- Additional classroom worksheet variants.
+- Printable worksheet layout previews for classroom handout review before copying.
 
 ## Contributing
 
