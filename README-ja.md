@@ -21,6 +21,7 @@ Pathweave Lab は、グリッド探索アルゴリズムを説明するための
 - 訪問セル数、距離、重み付きコスト、移動モード、壁の数、地形セル数、到達可能/到達不能の状態を表示します。
 - 各探索結果を平易な言葉で説明します。
 - 授業で再現しやすい決定的なサンプル盤面を提供します。
+- **Detour wall**、**Weighted detour**、**No path** など、教師向けの名前付きレッスンプリセットで、焦点を絞った盤面状態をすばやく読み込めます。
 - JSON のエクスポート/インポートでローカルに共有し、例を再現できます。
 - 共有可能なエンコード済み `#board=` URL で、サーバーなしに盤面状態、地形、移動モードを読み込めます。
 - 授業用ワークシートのバリエーションをコピーできます。既定の簡潔な配布資料、または予想と振り返りの追加プロンプトを含むガイド付き配布資料を選べます。
@@ -50,21 +51,22 @@ npm run dev
 ## 例
 
 1. **Braid**、**Rooms**、**Corridor** のサンプル盤面を選びます。
-2. **Toggle walls** を選び、セルをクリックして盤面を変更します。
-3. **Cycle terrain** を選び、通常、泥、水のセルを塗ります。
-4. **Move start** または **Move goal** を選んで端点を移動します。
-5. **Search** で **BFS (unweighted)**、**Dijkstra (weighted)**、**Compare BFS and Dijkstra** を切り替えます。
-6. **Movement** で **Orthogonal (4-way)** と **Diagonal (8-way)** を切り替え、移動ルールで結果がどう変わるかを比較します。
-7. **Light mode** または **Dark mode** でブラウザテーマを切り替えます。
-8. **Run search** をクリックし、訪問セル、ステップ数、重み付きコスト、最終経路を比較します。
-9. **Reset playback**、**Prev**、**Next** で各訪問セルを確認します。
-10. JSON 状態をコピーするか、**Copy share URL** を使って同じ盤面、地形、移動モードをローカルで共有します。
-11. **Copy SVG** を使い、スライド、ワークシート、LMS ページ、バグ報告向けの単体盤面スナップショットをコピーします。
-12. ワークシートのコントロールで **Concise** または **Guided** を選び、**Copy worksheet** で選択した Markdown の課題文と解答を授業資料に貼り付けます。
+2. **Lesson preset** で **Detour wall**、**Weighted detour**、**No path** を選び、焦点を絞った授業用盤面を読み込みます。
+3. **Toggle walls** を選び、セルをクリックして盤面を変更します。
+4. **Cycle terrain** を選び、通常、泥、水のセルを塗ります。
+5. **Move start** または **Move goal** を選んで端点を移動します。
+6. **Search** で **BFS (unweighted)**、**Dijkstra (weighted)**、**Compare BFS and Dijkstra** を切り替えます。
+7. **Movement** で **Orthogonal (4-way)** と **Diagonal (8-way)** を切り替え、移動ルールで結果がどう変わるかを比較します。
+8. **Light mode** または **Dark mode** でブラウザテーマを切り替えます。
+9. **Run search** をクリックし、訪問セル、ステップ数、重み付きコスト、最終経路を比較します。
+10. **Reset playback**、**Prev**、**Next** で各訪問セルを確認します。
+11. JSON 状態をコピーするか、**Copy share URL** を使って同じ盤面、地形、移動モードをローカルで共有します。
+12. **Copy SVG** を使い、スライド、ワークシート、LMS ページ、バグ報告向けの単体盤面スナップショットをコピーします。
+13. ワークシートのコントロールで **Concise** または **Guided** を選び、**Copy worksheet** で選択した Markdown の課題文と解答を授業資料に貼り付けます。
 
 ## 設定
 
-MVP にはランタイム設定ファイルはありません。盤面サイズ、サンプル名、ワークシートのバリエーション操作は `src/app.ts` に定義され、純粋なグリッド、テーマ、ワークシート、SVG エクスポート、共有の動作は `src/grid.ts`、`src/theme.ts`、`src/worksheet.ts`、`src/svgExport.ts`、`src/shareUrl.ts`、`src/algorithms.ts`、`src/samples.ts` にあります。ワークシートのバリエーションは `src/worksheet.ts` の決定的な TypeScript フォーマッターオプションです。
+MVP にはランタイム設定ファイルはありません。盤面サイズ、サンプル名、レッスンプリセット操作、ワークシートのバリエーション操作は `src/app.ts` に定義され、純粋なグリッド、プリセット、テーマ、ワークシート、SVG エクスポート、共有の動作は `src/grid.ts`、`src/presets.ts`、`src/theme.ts`、`src/worksheet.ts`、`src/svgExport.ts`、`src/shareUrl.ts`、`src/algorithms.ts`、`src/samples.ts` にあります。レッスンプリセットは `src/presets.ts` の型付き定義です。`applyPreset` は完全に複製された盤面状態を返すため、教師は元のプリセットを変更せずに例を読み込めます。ワークシートのバリエーションは `src/worksheet.ts` の決定的な TypeScript フォーマッターオプションです。
 
 ## 開発
 
@@ -81,7 +83,7 @@ npm run build
 
 ## テスト
 
-振る舞いテストは、最短経路、重み付き地形コスト、Dijkstra による低コスト経路選択、BFS と Dijkstra の説明、直交移動と対角移動、対角移動での角抜け防止、再生フレーム、壁の処理、到達不能な盤面、簡潔版とガイド付きワークシートの書き出しテキスト、決定的な SVG エクスポート、JSON 往復、共有 URL エンコード、テーマ設定の保存、壊れた入力の拒否、決定的なサンプル生成をカバーします。
+振る舞いテストは、最短経路、重み付き地形コスト、Dijkstra による低コスト経路選択、BFS と Dijkstra の説明、直交移動と対角移動、対角移動での角抜け防止、再生フレーム、壁の処理、到達不能な盤面、名前付きレッスンプリセットの検索と複製、重み付きプリセット地形、簡潔版とガイド付きワークシートの書き出しテキスト、決定的な SVG エクスポート、JSON 往復、共有 URL エンコード、テーマ設定の保存、壊れた入力の拒否、決定的なサンプル生成をカバーします。
 
 ```bash
 npm test -- --run
