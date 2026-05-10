@@ -18,6 +18,7 @@ import {
   terrainAt,
   toggleWall,
 } from "./grid";
+import { applyPreset, boardPresets, type BoardPresetName } from "./presets";
 import { type SampleName, createSampleGrid, sampleNames } from "./samples";
 import {
   createAppStateShareUrl,
@@ -79,6 +80,11 @@ app.innerHTML = `
       </label>
       <label>Sample board
         <select id="sample"></select>
+      </label>
+      <label>Lesson preset
+        <select id="preset">
+          <option value="">Custom board</option>
+        </select>
       </label>
       <label>Movement
         <select id="movement-mode">
@@ -142,6 +148,7 @@ const searchModeElement = mustFind<HTMLSelectElement>("#search-mode");
 const worksheetVariantElement =
   mustFind<HTMLSelectElement>("#worksheet-variant");
 const sampleElement = mustFind<HTMLSelectElement>("#sample");
+const presetElement = mustFind<HTMLSelectElement>("#preset");
 const playbackStatusElement = mustFind<HTMLOutputElement>("#playback-status");
 const playbackPreviousElement = mustFind<HTMLButtonElement>("#playback-prev");
 const playbackNextElement = mustFind<HTMLButtonElement>("#playback-next");
@@ -150,6 +157,12 @@ const themeToggleElement = mustFind<HTMLButtonElement>("#theme-toggle");
 
 sampleElement.innerHTML = sampleNames
   .map((name) => `<option value="${name}">${labelSample(name)}</option>`)
+  .join("");
+presetElement.innerHTML += boardPresets
+  .map(
+    ({ name, label, description }) =>
+      `<option value="${name}" title="${description}">${label}</option>`,
+  )
   .join("");
 worksheetVariantElement.innerHTML = worksheetVariants
   .map(({ value, label }) => `<option value="${value}">${label}</option>`)
@@ -174,7 +187,19 @@ worksheetVariantElement.addEventListener("change", () => {
 });
 
 sampleElement.addEventListener("change", () => {
+  presetElement.value = "";
   grid = createSampleGrid(sampleElement.value as SampleName, width, height);
+  recompute();
+});
+
+presetElement.addEventListener("change", () => {
+  const presetName = presetElement.value as BoardPresetName | "";
+
+  if (!presetName) {
+    return;
+  }
+
+  grid = applyPreset(presetName);
   recompute();
 });
 
@@ -198,10 +223,12 @@ themeToggleElement.addEventListener("click", () => {
   renderThemeToggle();
 });
 mustFind<HTMLButtonElement>("#clear").addEventListener("click", () => {
+  presetElement.value = "";
   grid = { ...grid, walls: [] };
   recompute();
 });
 mustFind<HTMLButtonElement>("#reset").addEventListener("click", () => {
+  presetElement.value = "";
   grid = createSampleGrid(sampleElement.value as SampleName, width, height);
   recompute();
 });
@@ -212,6 +239,7 @@ mustFind<HTMLButtonElement>("#export").addEventListener("click", () => {
 mustFind<HTMLButtonElement>("#import").addEventListener("click", () => {
   try {
     grid = parseGrid(stateElement.value);
+    presetElement.value = "";
     recompute();
     setMessage("Board imported.");
   } catch (error) {
@@ -311,6 +339,8 @@ function readLocalStorage(): Storage | undefined {
 }
 
 function updateCell(point: Point): void {
+  presetElement.value = "";
+
   if (mode === "start" && !sameCell(point, grid.goal) && !isWall(grid, point)) {
     grid = { ...grid, start: point };
   } else if (
@@ -473,6 +503,7 @@ function loadBoardFromLocationHash(): string | null {
     grid = appState.grid;
     movementMode = appState.movementMode;
     movementModeElement.value = movementMode;
+    presetElement.value = "";
     return "Board loaded from share URL.";
   } catch (error) {
     const message =

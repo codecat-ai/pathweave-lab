@@ -21,6 +21,7 @@ Pathweave Lab 是一个交互式、本地优先的寻路实验场，用于讲解
 - 显示已访问单元格数、距离、加权成本、移动模式、墙体数、地形数以及可达/不可达状态。
 - 用通俗语言解释每次搜索结果。
 - 提供确定性的示例棋盘，便于重复教学。
+- 提供命名教师课程预设，例如 **Detour wall**、**Weighted detour** 和 **No path**，可快速加载聚焦的棋盘状态。
 - 通过 JSON 导出/导入在本地分享和复现实例。
 - 使用可分享的编码 `#board=` URL，无需服务器即可加载棋盘状态、地形和移动模式。
 - 可复制课堂练习变体：默认的简洁讲义，或带有额外预测与反思提示的引导式讲义。
@@ -50,21 +51,22 @@ npm run dev
 ## 示例
 
 1. 选择 **Braid**、**Rooms** 或 **Corridor** 示例棋盘。
-2. 选择 **Toggle walls** 并点击单元格来调整棋盘。
-3. 选择 **Cycle terrain** 来绘制普通、泥地和水域单元格。
-4. 选择 **Move start** 或 **Move goal** 来移动端点。
-5. 在 **Search** 中切换 **BFS (unweighted)**、**Dijkstra (weighted)** 和 **Compare BFS and Dijkstra**。
-6. 在 **Movement** 中切换 **Orthogonal (4-way)** 与 **Diagonal (8-way)**，比较移动规则如何改变结果。
-7. 使用 **Light mode** 或 **Dark mode** 切换浏览器主题。
-8. 点击 **Run search**，比较已访问单元格、步数、加权成本和最终路径。
-9. 使用 **Reset playback**、**Prev** 和 **Next** 检查每个已访问单元格。
-10. 复制 JSON 状态，或使用 **Copy share URL** 在本地分享同一个棋盘、地形和移动模式。
-11. 使用 **Copy SVG** 复制独立棋盘快照，用于幻灯片、练习纸、LMS 页面或错误报告。
-12. 在练习文本控件旁选择 **Concise** 或 **Guided**，然后使用 **Copy worksheet** 将所选 Markdown 题目和答案复制到课程讲义中。
+2. 在 **Lesson preset** 中选择 **Detour wall**、**Weighted detour** 或 **No path**，加载聚焦的教学棋盘。
+3. 选择 **Toggle walls** 并点击单元格来调整棋盘。
+4. 选择 **Cycle terrain** 来绘制普通、泥地和水域单元格。
+5. 选择 **Move start** 或 **Move goal** 来移动端点。
+6. 在 **Search** 中切换 **BFS (unweighted)**、**Dijkstra (weighted)** 和 **Compare BFS and Dijkstra**。
+7. 在 **Movement** 中切换 **Orthogonal (4-way)** 与 **Diagonal (8-way)**，比较移动规则如何改变结果。
+8. 使用 **Light mode** 或 **Dark mode** 切换浏览器主题。
+9. 点击 **Run search**，比较已访问单元格、步数、加权成本和最终路径。
+10. 使用 **Reset playback**、**Prev** 和 **Next** 检查每个已访问单元格。
+11. 复制 JSON 状态，或使用 **Copy share URL** 在本地分享同一个棋盘、地形和移动模式。
+12. 使用 **Copy SVG** 复制独立棋盘快照，用于幻灯片、练习纸、LMS 页面或错误报告。
+13. 在练习文本控件旁选择 **Concise** 或 **Guided**，然后使用 **Copy worksheet** 将所选 Markdown 题目和答案复制到课程讲义中。
 
 ## 配置
 
-MVP 中没有运行时配置文件。棋盘尺寸、示例名称和练习文本变体控件定义在 `src/app.ts` 中，纯网格、主题、练习文本、SVG 导出与分享行为位于 `src/grid.ts`、`src/theme.ts`、`src/worksheet.ts`、`src/svgExport.ts`、`src/shareUrl.ts`、`src/algorithms.ts` 和 `src/samples.ts`。练习文本变体是 `src/worksheet.ts` 中确定性的 TypeScript 格式化选项。
+MVP 中没有运行时配置文件。棋盘尺寸、示例名称、课程预设控件和练习文本变体控件定义在 `src/app.ts` 中，纯网格、预设、主题、练习文本、SVG 导出与分享行为位于 `src/grid.ts`、`src/presets.ts`、`src/theme.ts`、`src/worksheet.ts`、`src/svgExport.ts`、`src/shareUrl.ts`、`src/algorithms.ts` 和 `src/samples.ts`。课程预设是 `src/presets.ts` 中的类型化定义；`applyPreset` 会返回完整克隆的棋盘状态，便于教师加载示例而不改变源预设。练习文本变体是 `src/worksheet.ts` 中确定性的 TypeScript 格式化选项。
 
 ## 开发
 
@@ -81,7 +83,7 @@ npm run build
 
 ## 测试
 
-行为测试覆盖最短路径结果、加权地形成本、Dijkstra 低成本路径选择、BFS 与 Dijkstra 对比解释、正交和对角移动、对角穿角阻止、回放帧、墙体处理、不可达棋盘、简洁与引导式练习文本导出、确定性 SVG 导出、JSON 往返、分享 URL 编码、主题偏好存储、错误输入拒绝以及确定性示例生成。
+行为测试覆盖最短路径结果、加权地形成本、Dijkstra 低成本路径选择、BFS 与 Dijkstra 对比解释、正交和对角移动、对角穿角阻止、回放帧、墙体处理、不可达棋盘、命名课程预设查找与克隆、加权预设地形、简洁与引导式练习文本导出、确定性 SVG 导出、JSON 往返、分享 URL 编码、主题偏好存储、错误输入拒绝以及确定性示例生成。
 
 ```bash
 npm test -- --run

@@ -4,6 +4,8 @@ All notable changes to Pathweave Lab will be documented in this file.
 
 ## Unreleased
 
+- Added named teacher lesson presets for detour walls, weighted detours, and no-path boards, with typed preset helpers and UI loading controls.
+- Added behavior tests for preset lookup, cloned preset application, weighted preset terrain, and no-path search results.
 - Added an optional browser theme toggle with dark mode as the default, light mode support, and localStorage persistence.
 - Added behavior tests for theme preference loading, invalid stored values, storage failures, persistence, and toggling.
 - Added weighted terrain painting with normal, mud, and water cells.
