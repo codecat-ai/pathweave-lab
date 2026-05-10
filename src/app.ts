@@ -32,6 +32,11 @@ import {
   worksheetVariants,
   type WorksheetVariant,
 } from "./worksheet";
+import {
+  createWorksheetPrintHtml,
+  printWorksheetPreview,
+  renderWorksheetPreview,
+} from "./worksheetPrint";
 import "./style.css";
 
 const width = 16;
@@ -132,8 +137,15 @@ app.innerHTML = `
         <select id="worksheet-variant"></select>
       </label>
       <button id="copy-worksheet">Copy worksheet</button>
+      <button id="print-worksheet">Print worksheet</button>
     </div>
     <p id="message" role="status"></p>
+  </section>
+  <section class="panel worksheet-preview-panel" aria-labelledby="worksheet-preview-title">
+    <div class="worksheet-preview-panel__header">
+      <h2 id="worksheet-preview-title">Worksheet preview</h2>
+    </div>
+    <div id="worksheet-preview" class="worksheet-preview"></div>
   </section>
 `;
 
@@ -147,6 +159,7 @@ const movementModeElement = mustFind<HTMLSelectElement>("#movement-mode");
 const searchModeElement = mustFind<HTMLSelectElement>("#search-mode");
 const worksheetVariantElement =
   mustFind<HTMLSelectElement>("#worksheet-variant");
+const worksheetPreviewElement = mustFind<HTMLDivElement>("#worksheet-preview");
 const sampleElement = mustFind<HTMLSelectElement>("#sample");
 const presetElement = mustFind<HTMLSelectElement>("#preset");
 const playbackStatusElement = mustFind<HTMLOutputElement>("#playback-status");
@@ -184,6 +197,7 @@ searchModeElement.addEventListener("change", () => {
 
 worksheetVariantElement.addEventListener("change", () => {
   worksheetVariant = worksheetVariantElement.value as WorksheetVariant;
+  render();
 });
 
 sampleElement.addEventListener("change", () => {
@@ -258,6 +272,13 @@ mustFind<HTMLButtonElement>("#copy-worksheet").addEventListener(
   "click",
   () => void copyWorksheet(),
 );
+mustFind<HTMLButtonElement>("#print-worksheet").addEventListener("click", () =>
+  printWorksheetPreview({
+    print: () => window.print(),
+    setMessage,
+    variantLabel: worksheetVariantLabel(worksheetVariant),
+  }),
+);
 
 function recompute(): void {
   comparisonExplanation = "";
@@ -314,6 +335,13 @@ function render(): void {
   playbackPreviousElement.disabled = playbackIndex <= 0;
   playbackNextElement.disabled = playbackIndex >= playbackFrames.length - 1;
   playbackResetElement.disabled = playbackIndex <= 0;
+  renderWorksheetPreview(
+    worksheetPreviewElement,
+    createWorksheetPrintHtml(grid, movementMode, latestResult, {
+      variant: worksheetVariant,
+      searchLabel: searchLabel(searchMode),
+    }),
+  );
 }
 
 function renderThemeToggle(): void {

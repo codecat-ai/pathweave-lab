@@ -25,6 +25,7 @@ Pathfinding is easier to understand when learners can change the board and immed
 - JSON export/import for local sharing and reproducible examples.
 - Shareable encoded `#board=` URLs for loading board states, terrain, and movement mode without a server.
 - Copyable classroom worksheet variants: concise default handouts or guided handouts with extra prediction and reflection prompts.
+- Printable worksheet layout previews with escaped deterministic HTML and a print action for classroom handout review.
 - Copyable standalone SVG board snapshots with title, legend, metrics, terrain, visited cells, and final path.
 - Pure TypeScript grid and search functions covered by behavior tests.
 
@@ -62,11 +63,12 @@ Then open the local URL printed by Vite in your browser.
 10. Use **Reset playback**, **Prev**, and **Next** to inspect each visited cell.
 11. Copy the JSON state or use **Copy share URL** to share the same board, terrain, and movement mode locally.
 12. Use **Copy SVG** to copy a standalone board snapshot for slides, worksheets, LMS pages, or bug reports.
-13. Choose **Concise** or **Guided** next to the worksheet control, then use **Copy worksheet** to place the selected Markdown prompt and answer key into a lesson handout.
+13. Choose **Concise** or **Guided** next to the worksheet control to update the visible worksheet preview.
+14. Use **Print worksheet** for a paper-ready handout, or **Copy worksheet** to copy the selected Markdown prompt and answer key.
 
 ## Configuration
 
-There is no runtime configuration file in the MVP. Board dimensions, sample names, lesson preset controls, and worksheet variant controls are defined in `src/app.ts`, while pure grid, preset, theme, worksheet, SVG export, and sharing behavior lives in `src/grid.ts`, `src/presets.ts`, `src/theme.ts`, `src/worksheet.ts`, `src/svgExport.ts`, `src/shareUrl.ts`, `src/algorithms.ts`, and `src/samples.ts`. Lesson presets are typed definitions in `src/presets.ts`; `applyPreset` returns a complete cloned board state so teachers can load examples without mutating the source preset. Worksheet variants are deterministic TypeScript formatter options in `src/worksheet.ts`.
+There is no runtime configuration file in the MVP. Board dimensions, sample names, lesson preset controls, worksheet variant controls, and worksheet preview wiring are defined in `src/app.ts`, while pure grid, preset, theme, worksheet, printable worksheet HTML, SVG export, and sharing behavior lives in `src/grid.ts`, `src/presets.ts`, `src/theme.ts`, `src/worksheet.ts`, `src/worksheetPrint.ts`, `src/svgExport.ts`, `src/shareUrl.ts`, `src/algorithms.ts`, and `src/samples.ts`. Lesson presets are typed definitions in `src/presets.ts`; `applyPreset` returns a complete cloned board state so teachers can load examples without mutating the source preset. Worksheet variants are deterministic TypeScript formatter options in `src/worksheet.ts`, and printable layout formatting is kept in `src/worksheetPrint.ts` for testable HTML escaping and print dependency injection.
 
 ## Development
 
@@ -83,7 +85,7 @@ npm run build
 
 ## Testing
 
-Behavior tests cover shortest-path results, weighted terrain costs, Dijkstra lower-cost path selection, BFS-vs-Dijkstra explanations, orthogonal and diagonal movement, diagonal corner-cut prevention, playback frames, wall handling, unreachable boards, named lesson preset lookup and cloning, weighted preset terrain, concise and guided worksheet export text, deterministic SVG export, JSON round-tripping, share URL encoding, theme preference storage, malformed input rejection, and deterministic sample generation.
+Behavior tests cover shortest-path results, weighted terrain costs, Dijkstra lower-cost path selection, BFS-vs-Dijkstra explanations, orthogonal and diagonal movement, diagonal corner-cut prevention, playback frames, wall handling, unreachable boards, named lesson preset lookup and cloning, weighted preset terrain, concise and guided worksheet export text, printable worksheet HTML escaping and variant previews, injected worksheet print behavior, deterministic SVG export, JSON round-tripping, share URL encoding, theme preference storage, malformed input rejection, and deterministic sample generation.
 
 ```bash
 npm test -- --run
@@ -91,7 +93,9 @@ npm test -- --run
 
 ## Roadmap
 
-- Printable worksheet layout previews for classroom handout review before copying.
+- Add importable/exportable lesson preset bundles for sharing workshop sequences across classrooms.
+- Add keyboard-first board editing shortcuts for faster live demos.
+- Add optional worksheet language packs while preserving deterministic local formatting.
 
 ## Contributing
 

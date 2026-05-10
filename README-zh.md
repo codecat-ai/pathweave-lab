@@ -25,6 +25,7 @@ Pathweave Lab 是一个交互式、本地优先的寻路实验场，用于讲解
 - 通过 JSON 导出/导入在本地分享和复现实例。
 - 使用可分享的编码 `#board=` URL，无需服务器即可加载棋盘状态、地形和移动模式。
 - 可复制课堂练习变体：默认的简洁讲义，或带有额外预测与反思提示的引导式讲义。
+- 提供可打印练习纸版式预览，使用转义后的确定性 HTML，并带有用于课堂讲义检查的打印操作。
 - 可复制独立 SVG 棋盘快照，包含标题、图例、指标、地形、已访问单元格和最终路径。
 - 纯 TypeScript 网格与搜索函数，并由行为测试覆盖。
 
@@ -62,11 +63,12 @@ npm run dev
 10. 使用 **Reset playback**、**Prev** 和 **Next** 检查每个已访问单元格。
 11. 复制 JSON 状态，或使用 **Copy share URL** 在本地分享同一个棋盘、地形和移动模式。
 12. 使用 **Copy SVG** 复制独立棋盘快照，用于幻灯片、练习纸、LMS 页面或错误报告。
-13. 在练习文本控件旁选择 **Concise** 或 **Guided**，然后使用 **Copy worksheet** 将所选 Markdown 题目和答案复制到课程讲义中。
+13. 在练习文本控件旁选择 **Concise** 或 **Guided**，可更新可见的练习纸预览。
+14. 使用 **Print worksheet** 打印适合纸张的讲义，或使用 **Copy worksheet** 复制所选 Markdown 题目和答案。
 
 ## 配置
 
-MVP 中没有运行时配置文件。棋盘尺寸、示例名称、课程预设控件和练习文本变体控件定义在 `src/app.ts` 中，纯网格、预设、主题、练习文本、SVG 导出与分享行为位于 `src/grid.ts`、`src/presets.ts`、`src/theme.ts`、`src/worksheet.ts`、`src/svgExport.ts`、`src/shareUrl.ts`、`src/algorithms.ts` 和 `src/samples.ts`。课程预设是 `src/presets.ts` 中的类型化定义；`applyPreset` 会返回完整克隆的棋盘状态，便于教师加载示例而不改变源预设。练习文本变体是 `src/worksheet.ts` 中确定性的 TypeScript 格式化选项。
+MVP 中没有运行时配置文件。棋盘尺寸、示例名称、课程预设控件、练习文本变体控件和练习纸预览接线定义在 `src/app.ts` 中，纯网格、预设、主题、练习文本、可打印练习纸 HTML、SVG 导出与分享行为位于 `src/grid.ts`、`src/presets.ts`、`src/theme.ts`、`src/worksheet.ts`、`src/worksheetPrint.ts`、`src/svgExport.ts`、`src/shareUrl.ts`、`src/algorithms.ts` 和 `src/samples.ts`。课程预设是 `src/presets.ts` 中的类型化定义；`applyPreset` 会返回完整克隆的棋盘状态，便于教师加载示例而不改变源预设。练习文本变体是 `src/worksheet.ts` 中确定性的 TypeScript 格式化选项；可打印版式格式化保存在 `src/worksheetPrint.ts` 中，便于测试 HTML 转义和打印依赖注入。
 
 ## 开发
 
@@ -83,7 +85,7 @@ npm run build
 
 ## 测试
 
-行为测试覆盖最短路径结果、加权地形成本、Dijkstra 低成本路径选择、BFS 与 Dijkstra 对比解释、正交和对角移动、对角穿角阻止、回放帧、墙体处理、不可达棋盘、命名课程预设查找与克隆、加权预设地形、简洁与引导式练习文本导出、确定性 SVG 导出、JSON 往返、分享 URL 编码、主题偏好存储、错误输入拒绝以及确定性示例生成。
+行为测试覆盖最短路径结果、加权地形成本、Dijkstra 低成本路径选择、BFS 与 Dijkstra 对比解释、正交和对角移动、对角穿角阻止、回放帧、墙体处理、不可达棋盘、命名课程预设查找与克隆、加权预设地形、简洁与引导式练习文本导出、可打印练习纸 HTML 转义和变体预览、注入式练习纸打印行为、确定性 SVG 导出、JSON 往返、分享 URL 编码、主题偏好存储、错误输入拒绝以及确定性示例生成。
 
 ```bash
 npm test -- --run
@@ -91,7 +93,9 @@ npm test -- --run
 
 ## 路线图
 
-- 提供可打印练习纸版式预览，便于教师在复制前检查课堂讲义。
+- 增加可导入/导出的课程预设包，用于在不同课堂间分享工作坊序列。
+- 增加键盘优先的棋盘编辑快捷键，提升现场演示速度。
+- 增加可选练习纸语言包，同时保持确定性的本地格式化。
 
 ## 贡献
 
