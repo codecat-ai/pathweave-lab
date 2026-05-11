@@ -11,6 +11,7 @@ Pathweave Lab 是一个交互式、本地优先的寻路实验场，用于讲解
 ## 功能
 
 - 用交互式网格切换墙体并移动起点/终点。
+- 提供键盘优先的棋盘光标快捷键，可在网格中移动并在无需鼠标的情况下应用所选绘制模式。
 - 支持普通、泥地和水域单元格的加权地形绘制。
 - 在无权重网格上使用广度优先搜索生成确定性的最短路径。
 - 使用确定性的 Dijkstra 搜索在加权地形上寻找最低成本路径。
@@ -56,19 +57,20 @@ npm run dev
 3. 选择 **Toggle walls** 并点击单元格来调整棋盘。
 4. 选择 **Cycle terrain** 来绘制普通、泥地和水域单元格。
 5. 选择 **Move start** 或 **Move goal** 来移动端点。
-6. 在 **Search** 中切换 **BFS (unweighted)**、**Dijkstra (weighted)** 和 **Compare BFS and Dijkstra**。
-7. 在 **Movement** 中切换 **Orthogonal (4-way)** 与 **Diagonal (8-way)**，比较移动规则如何改变结果。
-8. 使用 **Light mode** 或 **Dark mode** 切换浏览器主题。
-9. 点击 **Run search**，比较已访问单元格、步数、加权成本和最终路径。
-10. 使用 **Reset playback**、**Prev** 和 **Next** 检查每个已访问单元格。
-11. 复制 JSON 状态，或使用 **Copy share URL** 在本地分享同一个棋盘、地形和移动模式。
-12. 使用 **Copy SVG** 复制独立棋盘快照，用于幻灯片、练习纸、LMS 页面或错误报告。
-13. 在练习文本控件旁选择 **Concise** 或 **Guided**，可更新可见的练习纸预览。
-14. 使用 **Print worksheet** 打印适合纸张的讲义，或使用 **Copy worksheet** 复制所选 Markdown 题目和答案。
+6. 聚焦棋盘，并使用方向键、Home/End、PageUp/PageDown、Space/Enter 和 Escape 通过键盘编辑。
+7. 在 **Search** 中切换 **BFS (unweighted)**、**Dijkstra (weighted)** 和 **Compare BFS and Dijkstra**。
+8. 在 **Movement** 中切换 **Orthogonal (4-way)** 与 **Diagonal (8-way)**，比较移动规则如何改变结果。
+9. 使用 **Light mode** 或 **Dark mode** 切换浏览器主题。
+10. 点击 **Run search**，比较已访问单元格、步数、加权成本和最终路径。
+11. 使用 **Reset playback**、**Prev** 和 **Next** 检查每个已访问单元格。
+12. 复制 JSON 状态，或使用 **Copy share URL** 在本地分享同一个棋盘、地形和移动模式。
+13. 使用 **Copy SVG** 复制独立棋盘快照，用于幻灯片、练习纸、LMS 页面或错误报告。
+14. 在练习文本控件旁选择 **Concise** 或 **Guided**，可更新可见的练习纸预览。
+15. 使用 **Print worksheet** 打印适合纸张的讲义，或使用 **Copy worksheet** 复制所选 Markdown 题目和答案。
 
 ## 配置
 
-MVP 中没有运行时配置文件。棋盘尺寸、示例名称、课程预设控件、练习文本变体控件和练习纸预览接线定义在 `src/app.ts` 中，纯网格、预设、主题、练习文本、可打印练习纸 HTML、SVG 导出与分享行为位于 `src/grid.ts`、`src/presets.ts`、`src/theme.ts`、`src/worksheet.ts`、`src/worksheetPrint.ts`、`src/svgExport.ts`、`src/shareUrl.ts`、`src/algorithms.ts` 和 `src/samples.ts`。课程预设是 `src/presets.ts` 中的类型化定义；`applyPreset` 会返回完整克隆的棋盘状态，便于教师加载示例而不改变源预设。练习文本变体是 `src/worksheet.ts` 中确定性的 TypeScript 格式化选项；可打印版式格式化保存在 `src/worksheetPrint.ts` 中，便于测试 HTML 转义和打印依赖注入。
+MVP 中没有运行时配置文件。棋盘尺寸、示例名称、课程预设控件、键盘快捷键接线、练习文本变体控件和练习纸预览接线定义在 `src/app.ts` 中，纯网格、键盘快捷键、预设、主题、练习文本、可打印练习纸 HTML、SVG 导出与分享行为位于 `src/grid.ts`、`src/keyboardShortcuts.ts`、`src/presets.ts`、`src/theme.ts`、`src/worksheet.ts`、`src/worksheetPrint.ts`、`src/svgExport.ts`、`src/shareUrl.ts`、`src/algorithms.ts` 和 `src/samples.ts`。课程预设是 `src/presets.ts` 中的类型化定义；`applyPreset` 会返回完整克隆的棋盘状态，便于教师加载示例而不改变源预设。练习文本变体是 `src/worksheet.ts` 中确定性的 TypeScript 格式化选项；可打印版式格式化保存在 `src/worksheetPrint.ts` 中，便于测试 HTML 转义和打印依赖注入。
 
 ## 开发
 
@@ -85,7 +87,7 @@ npm run build
 
 ## 测试
 
-行为测试覆盖最短路径结果、加权地形成本、Dijkstra 低成本路径选择、BFS 与 Dijkstra 对比解释、正交和对角移动、对角穿角阻止、回放帧、墙体处理、不可达棋盘、命名课程预设查找与克隆、加权预设地形、简洁与引导式练习文本导出、可打印练习纸 HTML 转义和变体预览、注入式练习纸打印行为、确定性 SVG 导出、JSON 往返、分享 URL 编码、主题偏好存储、错误输入拒绝以及确定性示例生成。
+行为测试覆盖最短路径结果、加权地形成本、Dijkstra 低成本路径选择、BFS 与 Dijkstra 对比解释、正交和对角移动、对角穿角阻止、回放帧、墙体处理、键盘棋盘光标快捷键、不可达棋盘、命名课程预设查找与克隆、加权预设地形、简洁与引导式练习文本导出、可打印练习纸 HTML 转义和变体预览、注入式练习纸打印行为、确定性 SVG 导出、JSON 往返、分享 URL 编码、主题偏好存储、错误输入拒绝以及确定性示例生成。
 
 ```bash
 npm test -- --run
@@ -94,7 +96,7 @@ npm test -- --run
 ## 路线图
 
 - 增加可导入/导出的课程预设包，用于在不同课堂间分享工作坊序列。
-- 增加键盘优先的棋盘编辑快捷键，提升现场演示速度。
+- 增加课堂计时器和提示顺序控制，用于安排现场追踪练习节奏。
 - 增加可选练习纸语言包，同时保持确定性的本地格式化。
 
 ## 贡献

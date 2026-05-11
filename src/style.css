@@ -205,11 +205,21 @@ button:disabled {
   color: var(--status-text);
   font-weight: 800;
 }
+.keyboard-help {
+  margin: 0 0 12px;
+  color: var(--muted-text);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
 .grid {
   --columns: 16;
   display: grid;
   grid-template-columns: repeat(var(--columns), minmax(22px, 1fr));
   gap: 5px;
+}
+.grid:focus-visible {
+  outline: 3px solid var(--cell-current-outline);
+  outline-offset: 6px;
 }
 .cell {
   aspect-ratio: 1;
@@ -238,6 +248,11 @@ button:disabled {
 .cell.current {
   outline: 3px solid var(--cell-current-outline);
   outline-offset: -3px;
+}
+.cell.cursor {
+  box-shadow:
+    0 0 0 2px var(--panel-background),
+    0 0 0 5px var(--cell-current-outline);
 }
 .cell.wall {
   background: var(--cell-wall-background);

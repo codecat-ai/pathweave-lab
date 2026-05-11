@@ -10,14 +10,16 @@ import {
 import {
   type MovementMode,
   type Point,
-  type TerrainType,
   isWall,
   parseGrid,
   serializeGrid,
-  setTerrain,
   terrainAt,
-  toggleWall,
 } from "./grid";
+import {
+  applyBoardEdit,
+  applyBoardShortcut,
+  type BoardEditMode,
+} from "./keyboardShortcuts";
 import { applyPreset, boardPresets, type BoardPresetName } from "./presets";
 import { type SampleName, createSampleGrid, sampleNames } from "./samples";
 import {
@@ -41,15 +43,15 @@ import "./style.css";
 
 const width = 16;
 const height = 10;
-type PaintMode = "wall" | "terrain" | "start" | "goal";
 type SearchMode = "bfs" | "dijkstra" | "compare";
 type SearchResult = BreadthFirstSearchResult | DijkstraSearchResult;
 
-let mode: PaintMode = "wall";
+let mode: BoardEditMode = "wall";
 let searchMode: SearchMode = "bfs";
 let movementMode: MovementMode = "orthogonal";
 let worksheetVariant: WorksheetVariant = "concise";
 let grid = createSampleGrid("braid", width, height);
+let boardCursor: Point = grid.start;
 let latestResult: SearchResult = runBreadthFirstSearch(grid, movementMode);
 let comparisonExplanation = "";
 let playbackFrames = createPlaybackFrames(latestResult);
@@ -117,7 +119,10 @@ app.innerHTML = `
       <button id="reset">Reset sample</button>
     </aside>
     <section class="board-card">
-      <div id="grid" class="grid" role="grid" aria-label="Pathfinding board"></div>
+      <p class="keyboard-help" id="keyboard-help">
+        Keyboard: focus the board, move with arrows, Home/End, PageUp/PageDown; press Space or Enter to apply the selected paint mode; Escape returns to start.
+      </p>
+      <div id="grid" class="grid" role="grid" tabindex="0" aria-label="Pathfinding board" aria-describedby="keyboard-help"></div>
     </section>
     <aside class="panel" aria-label="Result details">
       <h2>Result</h2>
@@ -182,7 +187,7 @@ worksheetVariantElement.innerHTML = worksheetVariants
   .join("");
 
 modeElement.addEventListener("change", () => {
-  mode = modeElement.value as PaintMode;
+  mode = modeElement.value as BoardEditMode;
 });
 
 movementModeElement.addEventListener("change", () => {
@@ -203,6 +208,7 @@ worksheetVariantElement.addEventListener("change", () => {
 sampleElement.addEventListener("change", () => {
   presetElement.value = "";
   grid = createSampleGrid(sampleElement.value as SampleName, width, height);
+  boardCursor = grid.start;
   recompute();
 });
 
@@ -214,6 +220,7 @@ presetElement.addEventListener("change", () => {
   }
 
   grid = applyPreset(presetName);
+  boardCursor = grid.start;
   recompute();
 });
 
@@ -244,6 +251,7 @@ mustFind<HTMLButtonElement>("#clear").addEventListener("click", () => {
 mustFind<HTMLButtonElement>("#reset").addEventListener("click", () => {
   presetElement.value = "";
   grid = createSampleGrid(sampleElement.value as SampleName, width, height);
+  boardCursor = grid.start;
   recompute();
 });
 mustFind<HTMLButtonElement>("#export").addEventListener("click", () => {
@@ -253,6 +261,7 @@ mustFind<HTMLButtonElement>("#export").addEventListener("click", () => {
 mustFind<HTMLButtonElement>("#import").addEventListener("click", () => {
   try {
     grid = parseGrid(stateElement.value);
+    boardCursor = grid.start;
     presetElement.value = "";
     recompute();
     setMessage("Board imported.");
@@ -279,6 +288,29 @@ mustFind<HTMLButtonElement>("#print-worksheet").addEventListener("click", () =>
     variantLabel: worksheetVariantLabel(worksheetVariant),
   }),
 );
+
+gridElement.addEventListener("keydown", (event) => {
+  const result = applyBoardShortcut(
+    { grid, cursor: boardCursor, mode },
+    { key: event.key },
+  );
+
+  if (!result.handled) {
+    return;
+  }
+
+  event.preventDefault();
+  grid = result.state.grid;
+  boardCursor = result.state.cursor;
+
+  if (result.edited) {
+    presetElement.value = "";
+    recompute();
+    return;
+  }
+
+  render();
+});
 
 function recompute(): void {
   comparisonExplanation = "";
@@ -310,9 +342,11 @@ function render(): void {
       const point = { x, y };
       const cell = document.createElement("button");
       cell.type = "button";
+      cell.tabIndex = -1;
       cell.className = cellClass(point, frame, pathKeys, visitedKeys);
       cell.textContent = cellLabel(point, pathKeys);
-      cell.ariaLabel = `Cell ${x}, ${y}, ${terrainAt(grid, point)} terrain`;
+      cell.ariaLabel = cellAriaLabel(point);
+      cell.ariaSelected = String(sameCell(point, boardCursor));
       cell.addEventListener("click", () => updateCell(point));
       gridElement.append(cell);
     }
@@ -367,21 +401,9 @@ function readLocalStorage(): Storage | undefined {
 }
 
 function updateCell(point: Point): void {
+  boardCursor = point;
   presetElement.value = "";
-
-  if (mode === "start" && !sameCell(point, grid.goal) && !isWall(grid, point)) {
-    grid = { ...grid, start: point };
-  } else if (
-    mode === "goal" &&
-    !sameCell(point, grid.start) &&
-    !isWall(grid, point)
-  ) {
-    grid = { ...grid, goal: point };
-  } else if (mode === "wall") {
-    grid = toggleWall(grid, point);
-  } else if (mode === "terrain") {
-    grid = setTerrain(grid, point, nextTerrain(terrainAt(grid, point)));
-  }
+  grid = applyBoardEdit(grid, point, mode);
   recompute();
 }
 
@@ -399,6 +421,7 @@ function cellClass(
   if (visitedKeys.has(key(point))) classes.push("visited");
   if (pathKeys.has(key(point))) classes.push("path");
   if (frame && sameCell(point, frame.current)) classes.push("current");
+  if (sameCell(point, boardCursor)) classes.push("cursor");
   return classes.join(" ");
 }
 
@@ -412,6 +435,18 @@ function cellLabel(point: Point, pathKeys: Set<string>): string {
   return "";
 }
 
+function cellAriaLabel(point: Point): string {
+  const markers = [`Cell ${point.x}, ${point.y}`];
+
+  if (sameCell(point, boardCursor)) markers.push("keyboard cursor");
+  if (sameCell(point, grid.start)) markers.push("start");
+  if (sameCell(point, grid.goal)) markers.push("goal");
+  if (isWall(grid, point)) markers.push("wall");
+  if (!isWall(grid, point)) markers.push(`${terrainAt(grid, point)} terrain`);
+
+  return markers.join(", ");
+}
+
 function key(point: Point): string {
   return `${point.x},${point.y}`;
 }
@@ -422,12 +457,6 @@ function sameCell(left: Point, right: Point): boolean {
 
 function labelSample(name: SampleName): string {
   return name.charAt(0).toUpperCase() + name.slice(1);
-}
-
-function nextTerrain(type: TerrainType): TerrainType {
-  if (type === "normal") return "mud";
-  if (type === "mud") return "water";
-  return "normal";
 }
 
 function searchLabel(mode: SearchMode): string {
@@ -531,6 +560,7 @@ function loadBoardFromLocationHash(): string | null {
     grid = appState.grid;
     movementMode = appState.movementMode;
     movementModeElement.value = movementMode;
+    boardCursor = grid.start;
     presetElement.value = "";
     return "Board loaded from share URL.";
   } catch (error) {
