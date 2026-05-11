@@ -11,6 +11,7 @@ Pathfinding is easier to understand when learners can change the board and immed
 ## Features
 
 - Interactive grid for toggling walls and moving start/goal cells.
+- Keyboard-first board cursor shortcuts for moving across the grid and applying the selected paint mode without mouse input.
 - Weighted terrain painting with normal, mud, and water cells.
 - Breadth-first search with deterministic shortest paths on unweighted grids.
 - Deterministic Dijkstra search for lowest-cost paths on weighted terrain.
@@ -56,19 +57,20 @@ Then open the local URL printed by Vite in your browser.
 3. Select **Toggle walls** and click cells to reshape the board.
 4. Select **Cycle terrain** to paint normal, mud, and water cells.
 5. Select **Move start** or **Move goal** to reposition endpoints.
-6. Switch **Search** between **BFS (unweighted)**, **Dijkstra (weighted)**, and **Compare BFS and Dijkstra**.
-7. Switch **Movement** between **Orthogonal (4-way)** and **Diagonal (8-way)** to compare how movement rules change the result.
-8. Use **Light mode** or **Dark mode** to switch the browser theme.
-9. Click **Run search** and compare visited cells, steps, weighted cost, and the final path.
-10. Use **Reset playback**, **Prev**, and **Next** to inspect each visited cell.
-11. Copy the JSON state or use **Copy share URL** to share the same board, terrain, and movement mode locally.
-12. Use **Copy SVG** to copy a standalone board snapshot for slides, worksheets, LMS pages, or bug reports.
-13. Choose **Concise** or **Guided** next to the worksheet control to update the visible worksheet preview.
-14. Use **Print worksheet** for a paper-ready handout, or **Copy worksheet** to copy the selected Markdown prompt and answer key.
+6. Focus the board and use Arrow keys, Home/End, PageUp/PageDown, Space/Enter, and Escape to edit from the keyboard.
+7. Switch **Search** between **BFS (unweighted)**, **Dijkstra (weighted)**, and **Compare BFS and Dijkstra**.
+8. Switch **Movement** between **Orthogonal (4-way)** and **Diagonal (8-way)** to compare how movement rules change the result.
+9. Use **Light mode** or **Dark mode** to switch the browser theme.
+10. Click **Run search** and compare visited cells, steps, weighted cost, and the final path.
+11. Use **Reset playback**, **Prev**, and **Next** to inspect each visited cell.
+12. Copy the JSON state or use **Copy share URL** to share the same board, terrain, and movement mode locally.
+13. Use **Copy SVG** to copy a standalone board snapshot for slides, worksheets, LMS pages, or bug reports.
+14. Choose **Concise** or **Guided** next to the worksheet control to update the visible worksheet preview.
+15. Use **Print worksheet** for a paper-ready handout, or **Copy worksheet** to copy the selected Markdown prompt and answer key.
 
 ## Configuration
 
-There is no runtime configuration file in the MVP. Board dimensions, sample names, lesson preset controls, worksheet variant controls, and worksheet preview wiring are defined in `src/app.ts`, while pure grid, preset, theme, worksheet, printable worksheet HTML, SVG export, and sharing behavior lives in `src/grid.ts`, `src/presets.ts`, `src/theme.ts`, `src/worksheet.ts`, `src/worksheetPrint.ts`, `src/svgExport.ts`, `src/shareUrl.ts`, `src/algorithms.ts`, and `src/samples.ts`. Lesson presets are typed definitions in `src/presets.ts`; `applyPreset` returns a complete cloned board state so teachers can load examples without mutating the source preset. Worksheet variants are deterministic TypeScript formatter options in `src/worksheet.ts`, and printable layout formatting is kept in `src/worksheetPrint.ts` for testable HTML escaping and print dependency injection.
+There is no runtime configuration file in the MVP. Board dimensions, sample names, lesson preset controls, keyboard shortcut wiring, worksheet variant controls, and worksheet preview wiring are defined in `src/app.ts`, while pure grid, keyboard shortcut, preset, theme, worksheet, printable worksheet HTML, SVG export, and sharing behavior lives in `src/grid.ts`, `src/keyboardShortcuts.ts`, `src/presets.ts`, `src/theme.ts`, `src/worksheet.ts`, `src/worksheetPrint.ts`, `src/svgExport.ts`, `src/shareUrl.ts`, `src/algorithms.ts`, and `src/samples.ts`. Lesson presets are typed definitions in `src/presets.ts`; `applyPreset` returns a complete cloned board state so teachers can load examples without mutating the source preset. Worksheet variants are deterministic TypeScript formatter options in `src/worksheet.ts`, and printable layout formatting is kept in `src/worksheetPrint.ts` for testable HTML escaping and print dependency injection.
 
 ## Development
 
@@ -85,7 +87,7 @@ npm run build
 
 ## Testing
 
-Behavior tests cover shortest-path results, weighted terrain costs, Dijkstra lower-cost path selection, BFS-vs-Dijkstra explanations, orthogonal and diagonal movement, diagonal corner-cut prevention, playback frames, wall handling, unreachable boards, named lesson preset lookup and cloning, weighted preset terrain, concise and guided worksheet export text, printable worksheet HTML escaping and variant previews, injected worksheet print behavior, deterministic SVG export, JSON round-tripping, share URL encoding, theme preference storage, malformed input rejection, and deterministic sample generation.
+Behavior tests cover shortest-path results, weighted terrain costs, Dijkstra lower-cost path selection, BFS-vs-Dijkstra explanations, orthogonal and diagonal movement, diagonal corner-cut prevention, playback frames, wall handling, keyboard board cursor shortcuts, unreachable boards, named lesson preset lookup and cloning, weighted preset terrain, concise and guided worksheet export text, printable worksheet HTML escaping and variant previews, injected worksheet print behavior, deterministic SVG export, JSON round-tripping, share URL encoding, theme preference storage, malformed input rejection, and deterministic sample generation.
 
 ```bash
 npm test -- --run
@@ -94,7 +96,7 @@ npm test -- --run
 ## Roadmap
 
 - Add importable/exportable lesson preset bundles for sharing workshop sequences across classrooms.
-- Add keyboard-first board editing shortcuts for faster live demos.
+- Add classroom timer and prompt sequencing controls for pacing live tracing exercises.
 - Add optional worksheet language packs while preserving deterministic local formatting.
 
 ## Contributing
