@@ -23,6 +23,7 @@ Pathweave Lab 是一个交互式、本地优先的寻路实验场，用于讲解
 - 用通俗语言解释每次搜索结果。
 - 提供确定性的示例棋盘，便于重复教学。
 - 提供命名教师课程预设，例如 **Detour wall**、**Weighted detour** 和 **No path**，可快速加载聚焦的棋盘状态。
+- 提供可导入和导出的课程预设包，用于在不同课堂间分享确定性的工作坊序列。
 - 通过 JSON 导出/导入在本地分享和复现实例。
 - 使用可分享的编码 `#board=` URL，无需服务器即可加载棋盘状态、地形和移动模式。
 - 可复制课堂练习变体：默认的简洁讲义，或带有额外预测与反思提示的引导式讲义。
@@ -64,13 +65,15 @@ npm run dev
 10. 点击 **Run search**，比较已访问单元格、步数、加权成本和最终路径。
 11. 使用 **Reset playback**、**Prev** 和 **Next** 检查每个已访问单元格。
 12. 复制 JSON 状态，或使用 **Copy share URL** 在本地分享同一个棋盘、地形和移动模式。
-13. 使用 **Copy SVG** 复制独立棋盘快照，用于幻灯片、练习纸、LMS 页面或错误报告。
-14. 在练习文本控件旁选择 **Concise** 或 **Guided**，可更新可见的练习纸预览。
-15. 使用 **Print worksheet** 打印适合纸张的讲义，或使用 **Copy worksheet** 复制所选 Markdown 题目和答案。
+13. 使用 **Copy built-in bundle** 将内置课程预设序列复制为确定性 JSON，或将共享包粘贴到 **Bundle JSON** 并选择 **Import bundle**。
+14. 在 **Imported lesson** 中选择导入课程，并使用 **Apply imported lesson** 加载对应棋盘、移动模式和搜索模式。
+15. 使用 **Copy SVG** 复制独立棋盘快照，用于幻灯片、练习纸、LMS 页面或错误报告。
+16. 在练习文本控件旁选择 **Concise** 或 **Guided**，可更新可见的练习纸预览。
+17. 使用 **Print worksheet** 打印适合纸张的讲义，或使用 **Copy worksheet** 复制所选 Markdown 题目和答案。
 
 ## 配置
 
-MVP 中没有运行时配置文件。棋盘尺寸、示例名称、课程预设控件、键盘快捷键接线、练习文本变体控件和练习纸预览接线定义在 `src/app.ts` 中，纯网格、键盘快捷键、预设、主题、练习文本、可打印练习纸 HTML、SVG 导出与分享行为位于 `src/grid.ts`、`src/keyboardShortcuts.ts`、`src/presets.ts`、`src/theme.ts`、`src/worksheet.ts`、`src/worksheetPrint.ts`、`src/svgExport.ts`、`src/shareUrl.ts`、`src/algorithms.ts` 和 `src/samples.ts`。课程预设是 `src/presets.ts` 中的类型化定义；`applyPreset` 会返回完整克隆的棋盘状态，便于教师加载示例而不改变源预设。练习文本变体是 `src/worksheet.ts` 中确定性的 TypeScript 格式化选项；可打印版式格式化保存在 `src/worksheetPrint.ts` 中，便于测试 HTML 转义和打印依赖注入。
+MVP 中没有运行时配置文件。棋盘尺寸、示例名称、课程预设控件、课程包控件、键盘快捷键接线、练习文本变体控件和练习纸预览接线定义在 `src/app.ts` 中，纯网格、键盘快捷键、预设、预设包、主题、练习文本、可打印练习纸 HTML、SVG 导出与分享行为位于 `src/grid.ts`、`src/keyboardShortcuts.ts`、`src/presets.ts`、`src/presetBundles.ts`、`src/theme.ts`、`src/worksheet.ts`、`src/worksheetPrint.ts`、`src/svgExport.ts`、`src/shareUrl.ts`、`src/algorithms.ts` 和 `src/samples.ts`。课程预设是 `src/presets.ts` 中的类型化定义；`applyPreset` 会返回完整克隆的棋盘状态，便于教师加载示例而不改变源预设。课程预设包是在 `src/presetBundles.ts` 中实现的确定性、带 schema 版本的 JSON，包含克隆棋盘状态以及算法和移动模式元数据，供课堂导入/导出使用。练习文本变体是 `src/worksheet.ts` 中确定性的 TypeScript 格式化选项；可打印版式格式化保存在 `src/worksheetPrint.ts` 中，便于测试 HTML 转义和打印依赖注入。
 
 ## 开发
 
@@ -87,7 +90,7 @@ npm run build
 
 ## 测试
 
-行为测试覆盖最短路径结果、加权地形成本、Dijkstra 低成本路径选择、BFS 与 Dijkstra 对比解释、正交和对角移动、对角穿角阻止、回放帧、墙体处理、键盘棋盘光标快捷键、不可达棋盘、命名课程预设查找与克隆、加权预设地形、简洁与引导式练习文本导出、可打印练习纸 HTML 转义和变体预览、注入式练习纸打印行为、确定性 SVG 导出、JSON 往返、分享 URL 编码、主题偏好存储、错误输入拒绝以及确定性示例生成。
+行为测试覆盖最短路径结果、加权地形成本、Dijkstra 低成本路径选择、BFS 与 Dijkstra 对比解释、正交和对角移动、对角穿角阻止、回放帧、墙体处理、键盘棋盘光标快捷键、不可达棋盘、命名课程预设查找与克隆、加权预设地形、课程预设包创建、确定性包序列化、包校验、导入包克隆安全、简洁与引导式练习文本导出、可打印练习纸 HTML 转义和变体预览、注入式练习纸打印行为、确定性 SVG 导出、JSON 往返、分享 URL 编码、主题偏好存储、错误输入拒绝以及确定性示例生成。
 
 ```bash
 npm test -- --run
@@ -95,8 +98,8 @@ npm test -- --run
 
 ## 路线图
 
-- 增加可导入/导出的课程预设包，用于在不同课堂间分享工作坊序列。
 - 增加课堂计时器和提示顺序控制，用于安排现场追踪练习节奏。
+- 在导入前增加课程包预览摘要，让教师检查序列长度、算法和棋盘尺寸。
 - 增加可选练习纸语言包，同时保持确定性的本地格式化。
 
 ## 贡献

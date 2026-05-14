@@ -23,6 +23,7 @@ Pathfinding is easier to understand when learners can change the board and immed
 - Plain-language explanation of each search result.
 - Deterministic sample boards for repeatable lessons.
 - Named teacher lesson presets such as **Detour wall**, **Weighted detour**, and **No path** for quickly loading focused board states.
+- Importable and exportable lesson preset bundles for sharing deterministic workshop sequences across classrooms.
 - JSON export/import for local sharing and reproducible examples.
 - Shareable encoded `#board=` URLs for loading board states, terrain, and movement mode without a server.
 - Copyable classroom worksheet variants: concise default handouts or guided handouts with extra prediction and reflection prompts.
@@ -64,13 +65,15 @@ Then open the local URL printed by Vite in your browser.
 10. Click **Run search** and compare visited cells, steps, weighted cost, and the final path.
 11. Use **Reset playback**, **Prev**, and **Next** to inspect each visited cell.
 12. Copy the JSON state or use **Copy share URL** to share the same board, terrain, and movement mode locally.
-13. Use **Copy SVG** to copy a standalone board snapshot for slides, worksheets, LMS pages, or bug reports.
-14. Choose **Concise** or **Guided** next to the worksheet control to update the visible worksheet preview.
-15. Use **Print worksheet** for a paper-ready handout, or **Copy worksheet** to copy the selected Markdown prompt and answer key.
+13. Use **Copy built-in bundle** to copy the built-in lesson preset sequence as deterministic JSON, or paste a shared bundle into **Bundle JSON** and choose **Import bundle**.
+14. Select an imported lesson from **Imported lesson** and use **Apply imported lesson** to load its board, movement mode, and search mode.
+15. Use **Copy SVG** to copy a standalone board snapshot for slides, worksheets, LMS pages, or bug reports.
+16. Choose **Concise** or **Guided** next to the worksheet control to update the visible worksheet preview.
+17. Use **Print worksheet** for a paper-ready handout, or **Copy worksheet** to copy the selected Markdown prompt and answer key.
 
 ## Configuration
 
-There is no runtime configuration file in the MVP. Board dimensions, sample names, lesson preset controls, keyboard shortcut wiring, worksheet variant controls, and worksheet preview wiring are defined in `src/app.ts`, while pure grid, keyboard shortcut, preset, theme, worksheet, printable worksheet HTML, SVG export, and sharing behavior lives in `src/grid.ts`, `src/keyboardShortcuts.ts`, `src/presets.ts`, `src/theme.ts`, `src/worksheet.ts`, `src/worksheetPrint.ts`, `src/svgExport.ts`, `src/shareUrl.ts`, `src/algorithms.ts`, and `src/samples.ts`. Lesson presets are typed definitions in `src/presets.ts`; `applyPreset` returns a complete cloned board state so teachers can load examples without mutating the source preset. Worksheet variants are deterministic TypeScript formatter options in `src/worksheet.ts`, and printable layout formatting is kept in `src/worksheetPrint.ts` for testable HTML escaping and print dependency injection.
+There is no runtime configuration file in the MVP. Board dimensions, sample names, lesson preset controls, lesson bundle controls, keyboard shortcut wiring, worksheet variant controls, and worksheet preview wiring are defined in `src/app.ts`, while pure grid, keyboard shortcut, preset, preset bundle, theme, worksheet, printable worksheet HTML, SVG export, and sharing behavior lives in `src/grid.ts`, `src/keyboardShortcuts.ts`, `src/presets.ts`, `src/presetBundles.ts`, `src/theme.ts`, `src/worksheet.ts`, `src/worksheetPrint.ts`, `src/svgExport.ts`, `src/shareUrl.ts`, `src/algorithms.ts`, and `src/samples.ts`. Lesson presets are typed definitions in `src/presets.ts`; `applyPreset` returns a complete cloned board state so teachers can load examples without mutating the source preset. Lesson preset bundles are deterministic schema-versioned JSON in `src/presetBundles.ts`, including cloned board state plus algorithm and movement metadata for classroom import/export. Worksheet variants are deterministic TypeScript formatter options in `src/worksheet.ts`, and printable layout formatting is kept in `src/worksheetPrint.ts` for testable HTML escaping and print dependency injection.
 
 ## Development
 
@@ -87,7 +90,7 @@ npm run build
 
 ## Testing
 
-Behavior tests cover shortest-path results, weighted terrain costs, Dijkstra lower-cost path selection, BFS-vs-Dijkstra explanations, orthogonal and diagonal movement, diagonal corner-cut prevention, playback frames, wall handling, keyboard board cursor shortcuts, unreachable boards, named lesson preset lookup and cloning, weighted preset terrain, concise and guided worksheet export text, printable worksheet HTML escaping and variant previews, injected worksheet print behavior, deterministic SVG export, JSON round-tripping, share URL encoding, theme preference storage, malformed input rejection, and deterministic sample generation.
+Behavior tests cover shortest-path results, weighted terrain costs, Dijkstra lower-cost path selection, BFS-vs-Dijkstra explanations, orthogonal and diagonal movement, diagonal corner-cut prevention, playback frames, wall handling, keyboard board cursor shortcuts, unreachable boards, named lesson preset lookup and cloning, weighted preset terrain, lesson preset bundle creation, deterministic bundle serialization, bundle validation, imported bundle clone safety, concise and guided worksheet export text, printable worksheet HTML escaping and variant previews, injected worksheet print behavior, deterministic SVG export, JSON round-tripping, share URL encoding, theme preference storage, malformed input rejection, and deterministic sample generation.
 
 ```bash
 npm test -- --run
@@ -95,8 +98,8 @@ npm test -- --run
 
 ## Roadmap
 
-- Add importable/exportable lesson preset bundles for sharing workshop sequences across classrooms.
 - Add classroom timer and prompt sequencing controls for pacing live tracing exercises.
+- Add bundle preview summaries before import so teachers can inspect sequence length, algorithms, and board sizes.
 - Add optional worksheet language packs while preserving deterministic local formatting.
 
 ## Contributing
