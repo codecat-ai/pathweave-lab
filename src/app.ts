@@ -20,6 +20,14 @@ import {
   applyBoardShortcut,
   type BoardEditMode,
 } from "./keyboardShortcuts";
+import {
+  applyBundleEntry,
+  createPresetBundle,
+  parsePresetBundle,
+  serializePresetBundle,
+  type LessonPresetBundle,
+  type LessonPresetBundleEntry,
+} from "./presetBundles";
 import { applyPreset, boardPresets, type BoardPresetName } from "./presets";
 import { type SampleName, createSampleGrid, sampleNames } from "./samples";
 import {
@@ -57,6 +65,7 @@ let comparisonExplanation = "";
 let playbackFrames = createPlaybackFrames(latestResult);
 let playbackIndex = Math.max(0, playbackFrames.length - 1);
 let theme: Theme = readStoredTheme(readLocalStorage());
+let importedBundle: LessonPresetBundle | null = null;
 
 const app = document.querySelector<HTMLDivElement>("#app");
 if (!app) throw new Error("Application root not found.");
@@ -146,6 +155,25 @@ app.innerHTML = `
     </div>
     <p id="message" role="status"></p>
   </section>
+  <section class="panel bundle-share" aria-labelledby="bundle-share-title">
+    <h2 id="bundle-share-title">Lesson preset bundles</h2>
+    <label>Bundle JSON
+      <textarea id="bundle-state" spellcheck="false" aria-describedby="bundle-help"></textarea>
+    </label>
+    <p id="bundle-help" class="field-help">
+      Copy the built-in lesson sequence or paste a shared bundle from another classroom.
+    </p>
+    <div class="row">
+      <button id="copy-built-in-bundle" type="button">Copy built-in bundle</button>
+      <button id="import-bundle" type="button">Import bundle</button>
+      <label class="inline-control">Imported lesson
+        <select id="imported-bundle-entry" disabled>
+          <option value="">No imported lessons</option>
+        </select>
+      </label>
+      <button id="apply-bundle-entry" type="button" disabled>Apply imported lesson</button>
+    </div>
+  </section>
   <section class="panel worksheet-preview-panel" aria-labelledby="worksheet-preview-title">
     <div class="worksheet-preview-panel__header">
       <h2 id="worksheet-preview-title">Worksheet preview</h2>
@@ -158,10 +186,14 @@ const gridElement = mustFind<HTMLDivElement>("#grid");
 const metricsElement = mustFind<HTMLElement>("#metrics");
 const explanationElement = mustFind<HTMLElement>("#explanation");
 const stateElement = mustFind<HTMLTextAreaElement>("#state");
+const bundleStateElement = mustFind<HTMLTextAreaElement>("#bundle-state");
 const messageElement = mustFind<HTMLElement>("#message");
 const modeElement = mustFind<HTMLSelectElement>("#mode");
 const movementModeElement = mustFind<HTMLSelectElement>("#movement-mode");
 const searchModeElement = mustFind<HTMLSelectElement>("#search-mode");
+const importedBundleEntryElement = mustFind<HTMLSelectElement>(
+  "#imported-bundle-entry",
+);
 const worksheetVariantElement =
   mustFind<HTMLSelectElement>("#worksheet-variant");
 const worksheetPreviewElement = mustFind<HTMLDivElement>("#worksheet-preview");
@@ -273,6 +305,46 @@ mustFind<HTMLButtonElement>("#copy-share-url").addEventListener(
   "click",
   () => void copyShareUrl(),
 );
+mustFind<HTMLButtonElement>("#copy-built-in-bundle").addEventListener(
+  "click",
+  () => void copyBuiltInBundle(),
+);
+mustFind<HTMLButtonElement>("#import-bundle").addEventListener("click", () => {
+  try {
+    importedBundle = parsePresetBundle(bundleStateElement.value);
+    renderImportedBundleOptions();
+    setMessage(
+      `Imported ${importedBundle.entries.length} lesson bundle entries.`,
+    );
+  } catch (error) {
+    importedBundle = null;
+    renderImportedBundleOptions();
+    setMessage(
+      error instanceof Error ? error.message : "Lesson bundle import failed.",
+    );
+  }
+});
+mustFind<HTMLButtonElement>("#apply-bundle-entry").addEventListener(
+  "click",
+  () => {
+    const entry = selectedImportedBundleEntry();
+
+    if (!entry) {
+      setMessage("Choose an imported lesson before applying it.");
+      return;
+    }
+
+    grid = applyBundleEntry(entry);
+    movementMode = entry.movement;
+    searchMode = entry.algorithm;
+    movementModeElement.value = movementMode;
+    searchModeElement.value = searchMode;
+    presetElement.value = "";
+    boardCursor = grid.start;
+    recompute();
+    setMessage(`Applied imported lesson: ${entry.title}.`);
+  },
+);
 mustFind<HTMLButtonElement>("#copy-svg").addEventListener(
   "click",
   () => void copySvg(),
@@ -375,6 +447,30 @@ function render(): void {
       variant: worksheetVariant,
       searchLabel: searchLabel(searchMode),
     }),
+  );
+}
+
+function renderImportedBundleOptions(): void {
+  importedBundleEntryElement.innerHTML = "";
+
+  if (!importedBundle) {
+    importedBundleEntryElement.append(new Option("No imported lessons", ""));
+    importedBundleEntryElement.disabled = true;
+    mustFind<HTMLButtonElement>("#apply-bundle-entry").disabled = true;
+    return;
+  }
+
+  for (const entry of importedBundle.entries) {
+    importedBundleEntryElement.append(new Option(entry.title, entry.id));
+  }
+
+  importedBundleEntryElement.disabled = false;
+  mustFind<HTMLButtonElement>("#apply-bundle-entry").disabled = false;
+}
+
+function selectedImportedBundleEntry(): LessonPresetBundleEntry | undefined {
+  return importedBundle?.entries.find(
+    (entry) => entry.id === importedBundleEntryElement.value,
   );
 }
 
@@ -520,6 +616,32 @@ async function copyWorksheet(): Promise<void> {
   }
 }
 
+async function copyBuiltInBundle(): Promise<void> {
+  const bundleJson = serializePresetBundle(
+    createPresetBundle(
+      "Pathweave Lab built-in lesson presets",
+      boardPresets.map(({ name }) => name),
+    ),
+  );
+  bundleStateElement.value = bundleJson;
+
+  if (!navigator.clipboard?.writeText) {
+    setMessage(
+      "Built-in lesson bundle placed in the bundle text area because clipboard is unavailable.",
+    );
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(bundleJson);
+    setMessage("Built-in lesson bundle copied to clipboard.");
+  } catch {
+    setMessage(
+      "Built-in lesson bundle placed in the bundle text area because clipboard copy failed.",
+    );
+  }
+}
+
 async function copySvg(): Promise<void> {
   const svg = createBoardSvg({
     grid,
@@ -583,6 +705,7 @@ function mustFind<T extends Element>(selector: string): T {
 const startupMessage = loadBoardFromLocationHash();
 recompute();
 renderThemeToggle();
+renderImportedBundleOptions();
 
 if (startupMessage) {
   setMessage(startupMessage);
