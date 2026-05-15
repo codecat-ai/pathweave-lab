@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   applyBundleEntry,
   createPresetBundle,
+  formatPresetBundleSummary,
   parsePresetBundle,
   serializePresetBundle,
+  summarizePresetBundle,
 } from "../src/presetBundles";
 import type { Grid } from "../src/grid";
 
@@ -260,6 +262,118 @@ describe("lesson preset bundles", () => {
   it("rejects unknown selected preset ids while creating a bundle", () => {
     expect(() => createPresetBundle("Bad", ["detour-wall", "missing"])).toThrow(
       "Unknown lesson preset id: missing",
+    );
+  });
+
+  it("summarizes mixed bundle metadata for pre-import previews", () => {
+    const bundle = createPresetBundle(
+      "Classroom sequence",
+      ["detour-wall", "weighted-detour", "no-path"],
+      {
+        algorithmByPreset: {
+          "detour-wall": "bfs",
+          "weighted-detour": "dijkstra",
+          "no-path": "bfs",
+        },
+        movementByPreset: {
+          "detour-wall": "orthogonal",
+          "weighted-detour": "diagonal",
+          "no-path": "orthogonal",
+        },
+      },
+    );
+
+    expect(summarizePresetBundle(bundle)).toEqual({
+      title: "Classroom sequence",
+      entryCount: 3,
+      algorithms: ["bfs", "dijkstra"],
+      movements: ["orthogonal", "diagonal"],
+      boardSizes: ["7x5", "4x2", "3x3"],
+      hasWeightedTerrain: true,
+      entrySummaries: [
+        {
+          id: "detour-wall",
+          title: "Detour wall",
+          algorithm: "bfs",
+          movement: "orthogonal",
+          size: "7x5",
+          terrainCount: 0,
+        },
+        {
+          id: "weighted-detour",
+          title: "Weighted detour",
+          algorithm: "dijkstra",
+          movement: "diagonal",
+          size: "4x2",
+          terrainCount: 2,
+        },
+        {
+          id: "no-path",
+          title: "No path",
+          algorithm: "bfs",
+          movement: "orthogonal",
+          size: "3x3",
+          terrainCount: 0,
+        },
+      ],
+    });
+  });
+
+  it("deduplicates board sizes while preserving first-seen order", () => {
+    const first = createPresetBundle("First", ["detour-wall"]);
+    const entry = firstEntry(first);
+    const repeatedSize = {
+      ...entry,
+      id: "detour-wall-copy",
+      title: "Detour wall copy",
+    };
+
+    const summary = summarizePresetBundle({
+      ...first,
+      title: "Repeated boards",
+      entries: [entry, repeatedSize],
+    });
+
+    expect(summary.boardSizes).toEqual(["7x5"]);
+    expect(summary.entrySummaries.map((entry) => entry.size)).toEqual([
+      "7x5",
+      "7x5",
+    ]);
+  });
+
+  it("formats bundle preview text with plural lesson grammar and entry lines", () => {
+    const bundle = createPresetBundle(
+      "Classroom sequence",
+      ["detour-wall", "weighted-detour"],
+      {
+        algorithmByPreset: {
+          "detour-wall": "bfs",
+          "weighted-detour": "dijkstra",
+        },
+        movementByPreset: {
+          "detour-wall": "orthogonal",
+          "weighted-detour": "diagonal",
+        },
+      },
+    );
+
+    expect(formatPresetBundleSummary(bundle)).toBe(
+      [
+        "Bundle: Classroom sequence · 2 lessons · algorithms: BFS, Dijkstra · movements: orthogonal, diagonal · board sizes: 7x5, 4x2 · weighted terrain: yes",
+        "1. Detour wall (detour-wall): BFS, orthogonal, 7x5, terrain cells: 0",
+        "2. Weighted detour (weighted-detour): Dijkstra, diagonal, 4x2, terrain cells: 2",
+      ].join("\n"),
+    );
+  });
+
+  it("formats a single-entry bundle with singular lesson grammar", () => {
+    const bundle = createPresetBundle("Solo lesson", ["detour-wall"]);
+
+    expect(formatPresetBundleSummary(bundle)).toBe(
+      [
+        "Bundle: Solo lesson · 1 lesson · algorithms: BFS · movements: orthogonal · board sizes: 7x5 · weighted terrain: no",
+        "1. Detour wall (detour-wall): BFS, orthogonal, 7x5, terrain cells: 0",
+      ].join("\n"),
     );
   });
 });

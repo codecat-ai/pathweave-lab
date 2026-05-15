@@ -23,6 +23,7 @@ import {
 import {
   applyBundleEntry,
   createPresetBundle,
+  formatPresetBundleSummary,
   parsePresetBundle,
   serializePresetBundle,
   type LessonPresetBundle,
@@ -163,6 +164,7 @@ app.innerHTML = `
     <p id="bundle-help" class="field-help">
       Copy the built-in lesson sequence or paste a shared bundle from another classroom.
     </p>
+    <pre id="bundle-preview" class="bundle-preview" aria-live="polite">Paste bundle JSON to preview its lessons before import.</pre>
     <div class="row">
       <button id="copy-built-in-bundle" type="button">Copy built-in bundle</button>
       <button id="import-bundle" type="button">Import bundle</button>
@@ -187,6 +189,7 @@ const metricsElement = mustFind<HTMLElement>("#metrics");
 const explanationElement = mustFind<HTMLElement>("#explanation");
 const stateElement = mustFind<HTMLTextAreaElement>("#state");
 const bundleStateElement = mustFind<HTMLTextAreaElement>("#bundle-state");
+const bundlePreviewElement = mustFind<HTMLElement>("#bundle-preview");
 const messageElement = mustFind<HTMLElement>("#message");
 const modeElement = mustFind<HTMLSelectElement>("#mode");
 const movementModeElement = mustFind<HTMLSelectElement>("#movement-mode");
@@ -236,6 +239,8 @@ worksheetVariantElement.addEventListener("change", () => {
   worksheetVariant = worksheetVariantElement.value as WorksheetVariant;
   render();
 });
+
+bundleStateElement.addEventListener("input", () => renderBundlePreview());
 
 sampleElement.addEventListener("change", () => {
   presetElement.value = "";
@@ -311,14 +316,15 @@ mustFind<HTMLButtonElement>("#copy-built-in-bundle").addEventListener(
 );
 mustFind<HTMLButtonElement>("#import-bundle").addEventListener("click", () => {
   try {
-    importedBundle = parsePresetBundle(bundleStateElement.value);
+    const nextBundle = parsePresetBundle(bundleStateElement.value);
+    importedBundle = nextBundle;
+    renderBundlePreview(nextBundle);
     renderImportedBundleOptions();
     setMessage(
       `Imported ${importedBundle.entries.length} lesson bundle entries.`,
     );
   } catch (error) {
-    importedBundle = null;
-    renderImportedBundleOptions();
+    renderBundlePreview();
     setMessage(
       error instanceof Error ? error.message : "Lesson bundle import failed.",
     );
@@ -466,6 +472,31 @@ function renderImportedBundleOptions(): void {
 
   importedBundleEntryElement.disabled = false;
   mustFind<HTMLButtonElement>("#apply-bundle-entry").disabled = false;
+}
+
+function renderBundlePreview(bundle?: LessonPresetBundle): void {
+  const json = bundleStateElement.value.trim();
+
+  if (bundle) {
+    bundlePreviewElement.textContent = formatPresetBundleSummary(bundle);
+    return;
+  }
+
+  if (!json) {
+    bundlePreviewElement.textContent =
+      "Paste bundle JSON to preview its lessons before import.";
+    return;
+  }
+
+  try {
+    bundlePreviewElement.textContent = formatPresetBundleSummary(
+      parsePresetBundle(json),
+    );
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Lesson bundle preview failed.";
+    bundlePreviewElement.textContent = `Bundle preview unavailable: ${message}`;
+  }
 }
 
 function selectedImportedBundleEntry(): LessonPresetBundleEntry | undefined {
@@ -617,13 +648,13 @@ async function copyWorksheet(): Promise<void> {
 }
 
 async function copyBuiltInBundle(): Promise<void> {
-  const bundleJson = serializePresetBundle(
-    createPresetBundle(
-      "Pathweave Lab built-in lesson presets",
-      boardPresets.map(({ name }) => name),
-    ),
+  const bundle = createPresetBundle(
+    "Pathweave Lab built-in lesson presets",
+    boardPresets.map(({ name }) => name),
   );
+  const bundleJson = serializePresetBundle(bundle);
   bundleStateElement.value = bundleJson;
+  renderBundlePreview(bundle);
 
   if (!navigator.clipboard?.writeText) {
     setMessage(
@@ -706,6 +737,7 @@ const startupMessage = loadBoardFromLocationHash();
 recompute();
 renderThemeToggle();
 renderImportedBundleOptions();
+renderBundlePreview();
 
 if (startupMessage) {
   setMessage(startupMessage);

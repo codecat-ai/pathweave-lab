@@ -30,6 +30,25 @@ export interface LessonPresetBundleEntry {
   readonly board: Grid;
 }
 
+export interface LessonPresetBundleEntrySummary {
+  readonly id: string;
+  readonly title: string;
+  readonly algorithm: LessonBundleAlgorithm;
+  readonly movement: MovementMode;
+  readonly size: string;
+  readonly terrainCount: number;
+}
+
+export interface LessonPresetBundleSummary {
+  readonly title: string;
+  readonly entryCount: number;
+  readonly algorithms: readonly LessonBundleAlgorithm[];
+  readonly movements: readonly MovementMode[];
+  readonly boardSizes: readonly string[];
+  readonly hasWeightedTerrain: boolean;
+  readonly entrySummaries: readonly LessonPresetBundleEntrySummary[];
+}
+
 export interface CreatePresetBundleOptions {
   readonly algorithmByPreset?: Partial<
     Record<BoardPresetName, LessonBundleAlgorithm>
@@ -165,6 +184,60 @@ export function applyBundleEntry(entry: LessonPresetBundleEntry): Grid {
   return cloneGrid(entry.board);
 }
 
+export function summarizePresetBundle(
+  bundle: LessonPresetBundle,
+): LessonPresetBundleSummary {
+  const algorithms: LessonBundleAlgorithm[] = [];
+  const movements: MovementMode[] = [];
+  const boardSizes: string[] = [];
+  const entrySummaries = bundle.entries.map((entry) => {
+    const size = boardSize(entry.board);
+    pushUnique(algorithms, entry.algorithm);
+    pushUnique(movements, entry.movement);
+    pushUnique(boardSizes, size);
+
+    return {
+      id: entry.id,
+      title: entry.title,
+      algorithm: entry.algorithm,
+      movement: entry.movement,
+      size,
+      terrainCount: entry.board.terrain.length,
+    };
+  });
+
+  return {
+    title: bundle.title,
+    entryCount: bundle.entries.length,
+    algorithms,
+    movements,
+    boardSizes,
+    hasWeightedTerrain: entrySummaries.some(
+      ({ terrainCount }) => terrainCount > 0,
+    ),
+    entrySummaries,
+  };
+}
+
+export function formatPresetBundleSummary(bundle: LessonPresetBundle): string {
+  const summary = summarizePresetBundle(bundle);
+  const lessonLabel = summary.entryCount === 1 ? "lesson" : "lessons";
+  const headline = [
+    `Bundle: ${summary.title}`,
+    `${summary.entryCount} ${lessonLabel}`,
+    `algorithms: ${summary.algorithms.map(formatAlgorithm).join(", ")}`,
+    `movements: ${summary.movements.join(", ")}`,
+    `board sizes: ${summary.boardSizes.join(", ")}`,
+    `weighted terrain: ${summary.hasWeightedTerrain ? "yes" : "no"}`,
+  ].join(" · ");
+  const entryLines = summary.entrySummaries.map(
+    (entry, index) =>
+      `${index + 1}. ${entry.title} (${entry.id}): ${formatAlgorithm(entry.algorithm)}, ${entry.movement}, ${entry.size}, terrain cells: ${entry.terrainCount}`,
+  );
+
+  return [headline, ...entryLines].join("\n");
+}
+
 function createBundleEntry(
   preset: BoardPreset,
   options: CreatePresetBundleOptions,
@@ -234,6 +307,22 @@ function cloneGrid(grid: Grid): Grid {
 
 function defaultAlgorithm(preset: BoardPreset): LessonBundleAlgorithm {
   return preset.terrain.length > 0 ? "dijkstra" : "bfs";
+}
+
+function boardSize(grid: Grid): string {
+  return `${grid.width}x${grid.height}`;
+}
+
+function formatAlgorithm(algorithm: LessonBundleAlgorithm): string {
+  if (algorithm === "bfs") return "BFS";
+  if (algorithm === "dijkstra") return "Dijkstra";
+  return "Compare";
+}
+
+function pushUnique<T>(values: T[], value: T): void {
+  if (!values.includes(value)) {
+    values.push(value);
+  }
 }
 
 function parseRequiredString(value: unknown, label: string): string {
